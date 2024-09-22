@@ -1,0 +1,14 @@
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\bin\Debug\net8.0\JSONMakerProjectConsoleApp.exe
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\bin\Debug\net8.0\JSONMakerProjectConsoleApp.deps.json
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\bin\Debug\net8.0\JSONMakerProjectConsoleApp.runtimeconfig.json
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\bin\Debug\net8.0\JSONMakerProjectConsoleApp.dll
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\bin\Debug\net8.0\JSONMakerProjectConsoleApp.pdb
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\JSONMakerProjectConsoleApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\JSONMakerProjectConsoleApp.AssemblyInfoInputs.cache
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\JSONMakerProjectConsoleApp.AssemblyInfo.cs
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\JSONMakerProjectConsoleApp.csproj.CoreCompileInputs.cache
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\JSONMakerProjectConsoleApp.dll
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\refint\JSONMakerProjectConsoleApp.dll
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\JSONMakerProjectConsoleApp.pdb
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\JSONMakerProjectConsoleApp.genruntimeconfig.cache
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Debug\net8.0\ref\JSONMakerProjectConsoleApp.dll

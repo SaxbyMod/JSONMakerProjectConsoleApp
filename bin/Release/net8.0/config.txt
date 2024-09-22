@@ -1,0 +1,10 @@
+PropertyDescriptions = true;
+PropertySyntaxShown = true;
+ShowFieldTypeAsName = true;
+JsonExtentsionType = .json;
+ColorfulText = true;
+SaveFilePath[JSON] = default;
+SaveFilePath[Schema] = default;
+SaveSchemaWithCustomNames = false;
+DefaultCaseCorrection = true;
+DescriptionsForSchemaProperties = true;
