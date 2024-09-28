@@ -12,3 +12,4 @@ C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleAp
 C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Release\net8.0\JSONMakerProjectConsoleApp.pdb
 C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Release\net8.0\JSONMakerProjectConsoleApp.genruntimeconfig.cache
 C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Release\net8.0\ref\JSONMakerProjectConsoleApp.dll
+C:\Users\Thinc\source\repos\JSONMakerProjectConsoleApp\JSONMakerProjectConsoleApp\obj\Release\net8.0\JSONMakerProjectConsoleApp.sourcelink.json
