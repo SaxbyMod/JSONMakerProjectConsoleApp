@@ -1,9 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-
 class Program
 {
     // Color Lists
@@ -28,11 +28,9 @@ class Program
     public static readonly string[] HighIntensityInvisibleColorText = ["\u001b[8;90m", "\u001b[8;91m", "\u001b[8;92m", "\u001b[8;93m", "\u001b[8;94m", "\u001b[8;95m", "\u001b[8;96m", "\u001b[8;97m"];
     public static readonly string[] HighIntensityStrikethroughColorText = ["\u001b[9;90m", "\u001b[9;91m", "\u001b[9;92m", "\u001b[9;93m", "\u001b[9;94m", "\u001b[9;95m", "\u001b[9;96m", "\u001b[9;97m"];
     public static readonly string ResetColor = "\u001b[0m";
-
     public static void Main()
     {
         string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
-
         // Check if config file exists, if not create and populate it
         if (!File.Exists(configPath))
         {
@@ -50,7 +48,6 @@ class Program
                 sw.WriteLine("DescriptionsForSchemaProperties = false");
             }
         }
-
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         foreach (var line in File.ReadLines(configPath))
         {
@@ -65,17 +62,13 @@ class Program
                 }
             }
         }
-
         // Config Values:
-
         bool colorfulText = bool.Parse(configValues.ContainsKey("ColorfulText") ? configValues["ColorfulText"] : "true");
-
         // Display menu to the user
         if (colorfulText != false)
         {
             Console.Write(ResetColor + BoldColorList[3] + "What is your choice?\n" + ResetColor + HighIntensityUnderlineColorList[4] + "\n* Schema\n* JSON\n* Configure Application" + ResetColor + BoldColorList[3] + "\n\nYour choice Here: " + ResetColor);
             string choice = Console.ReadLine();
-
             if (choice == "Schema")
             {
                 Schema();
@@ -97,11 +90,11 @@ class Program
                     Main();
                 }
             }
-        } else
+        }
+        else
         {
             Console.Write("What is your choice?\n\n* Schema\n* JSON\n* Configure Application\n\nYour choice Here: ");
             string choice = Console.ReadLine();
-
             if (choice == "Schema")
             {
                 Schema();
@@ -125,11 +118,9 @@ class Program
             }
         }
     }
-
     public static void Schema()
     {
         string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
-
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         foreach (var line in File.ReadLines(configPath))
         {
@@ -144,126 +135,589 @@ class Program
                 }
             }
         }
-
         // Config Values:
-
         bool colorfulText = bool.Parse(configValues.ContainsKey("ColorfulText") ? configValues["ColorfulText"] : "true");
-        char comma = ',';
+        string comma = ",";
         if (colorfulText != false)
         {
             Console.Clear();
-            Console.Write(ResetColor + BoldColorList[3] + "What do you want to do?" + ResetColor + HighIntensityUnderlineColorList[4]+"\n\n* Make Schema\n* Edit Schema\n* Save Schema" + ResetColor + BoldColorList[3] + "\n\nYour choice Here: ");
+            Console.Write(ResetColor + BoldColorList[3] + "What do you want to do?" + ResetColor + HighIntensityUnderlineColorList[4] + "\n\n* Make Schema\n* Edit Schema\n* Save Schema" + ResetColor + BoldColorList[3] + "\n\nYour choice Here: ");
             string choice2 = Console.ReadLine();
-
             // Schema Stuff
             if (choice2 == "Make Schema")
             {
                 string[] Schema = ["{"];
-
             }
-        } else
+        }
+        else
         {
             Console.Clear();
             Console.Write("What do you want to do?\n\n* Make Schema\n* Edit Schema\n* Save Schema\n\nYour choice Here: ");
             string choice2 = Console.ReadLine();
             int Properties = 1;
+            List<string> PropertiesList = new List<string> { };
             int CurrentProperties = 1;
             string type = "";
-
             // Schema Stuff
             if (choice2 == "Make Schema")
             {
                 Console.Clear();
                 List<string> Schema = new List<string> { "{" };
-                Schema.Add("\"$schema\": \"https://json-schema.org/draft-04/schema#\"" + comma);
+                Schema.Add("\"$schema\": \"https://json-schema.org/draft-04/schema#\"");
+                Schema.Add(comma);
                 Console.Write("What would you like to call your schema?: ");
-                Schema.Add("\"title\": \"" + Console.ReadLine() + "\"" + comma);
+                Schema.Add("\"title\": \"" + Console.ReadLine() + "\"");
+                Schema.Add(comma);
                 Console.Write("How would you describe the purpose of this schema?: ");
-                Schema.Add("\"description\": \"" + Console.ReadLine() + "\"" + comma);
-                Schema.Add("\"type\": \"object\"" + comma);
+                Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                Schema.Add(comma);
+                Schema.Add("\"type\": \"object\"");
+                Schema.Add(comma);
                 Schema.Add("\"properties\": {");
                 Console.Write("How Many Properties would you like to have in the Schema? [Must be a Positive Integer]: ");
                 Properties = int.Parse(Console.ReadLine());
                 Properties = Properties + 1;
-                while (Properties > CurrentProperties) {
+                while (Properties > CurrentProperties)
+                {
                     Console.WriteLine("Properties: " + Properties);
-                    if (CurrentProperties < 1)
-                    {
-                        Schema.Add(",");
-                    }
                     Console.Write("What do you want to call Property #" + CurrentProperties + "?: ");
-                    Schema.Add("\"" + Console.ReadLine() + "\": {");
+                    string PropertyName = Console.ReadLine();
+                    PropertiesList.Add(PropertyName);
+                    Schema.Add("\"" + PropertyName + "\": {");
                     Console.Write("What type should this property be? [Array, Boolean, Integer, Number, String, Object]: ");
                     type = Console.ReadLine();
                     if (type == "Array")
                     {
-                        Schema.Add("\"type\": \"array\"" + comma);
+                        Schema.Add("\"type\": \"array\"");
+                        Schema.Add(comma);
                         Console.Write("How would you describe this property?: ");
-                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"" + comma);
-                    } else if (type == "Boolean")
+                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                        Schema.Add(comma);
+                        // Specify the type of items in the array
+                        Console.Write("What type should the array items be? [Boolean, Integer, Number, String, Object]: ");
+                        string itemType = Console.ReadLine();
+                        Schema.Add("\"items\": { \"type\": \"" + itemType + "\" }");
+                        Schema.Add(comma);
+                        // Optional fields
+                        Console.Write("What is the minimum number of items allowed? [Enter a positive integer or press enter to skip]: ");
+                        string minItems = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(minItems))
+                        {
+                            Schema.Add("\"minItems\": " + minItems);
+                            Schema.Add(comma);
+                        }
+                        Console.Write("What is the maximum number of items allowed? [Enter a positive integer or press enter to skip]: ");
+                        string maxItems = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(maxItems))
+                        {
+                            Schema.Add("\"maxItems\": " + maxItems);
+                            Schema.Add(comma);
+                        }
+                        Console.Write("Should the items in the array be unique? [true/false]: ");
+                        string uniqueItems = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(uniqueItems))
+                        {
+                            Schema.Add("\"uniqueItems\": " + uniqueItems);
+                            Schema.Add(comma);
+                        }
+                        // Default value for array
+                        Console.Write("What is the default value for this array? [If there should be none hit enter, otherwise enter it as an array e.g. [1,2,3]]: ");
+                        string defaultArray = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(defaultArray))
+                        {
+                            Schema.Add("\"default\": " + defaultArray);
+                        }
+                        if (Schema.Any())
+                        {
+                            Schema.RemoveAt(Schema.Count - 1); // Remove last comma
+                        }
+                    }
+                    else if (type == "Boolean")
                     {
-                        Schema.Add("\"type\": \"boolean\"" + comma);
+                        Schema.Add("\"type\": \"boolean\"");
+                        Schema.Add(comma);
                         Console.Write("How would you describe this property?: ");
-                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"" + comma);
-                    } else if (type == "Integer")
+                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                        Schema.Add(comma);
+                        Console.Write("Should this bool be exactly one value being true or false?: ");
+                        Schema.Add("\"const\": \"" + Console.ReadLine() + "\"");
+                        Schema.Add(comma);
+                        Console.Write("What is the default value for this property? [If there should be none hit enter]: ");
+                        string Default = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(Default))
+                        {
+                            Schema.Add("\"default\": \"" + Console.ReadLine() + "\"");
+                            Schema.Add(comma);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Empty Understood");
+                        }
+                        Console.Write("What enums should be shown for this property? [If there should be none just press enter, if there are enter it in a format adjacent to '[2, -6, 0, -9]']: ");
+                        string Enums = Console.ReadLine();
+                        if (Enums.Contains('['))
+                        {
+                            Schema.Add("\"enum\": " + Enums);
+                            Schema.Add(comma);
+                        }
+                        else
+                        {
+                            Console.WriteLine("None Understood");
+                        }
+                        if (Schema.Any()) //prevent IndexOutOfRangeException for empty list
+                        {
+                            Schema.RemoveAt(Schema.Count - 1);
+                        }
+                    }
+                    else if (type == "Integer")
                     {
-                        Schema.Add("\"type\": \"integer\"" + comma);
+                        Schema.Add("\"type\": \"integer\"");
+                        Schema.Add(comma);
                         Console.Write("How would you describe this property?: ");
-                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"" + comma);
+                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                        Schema.Add(comma);
+                        Console.Write("What is the minimum value allowed for this field?: ");
+                        Schema.Add("\"minimum\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("What is the maximum value allowed for this field? [Can not be below the minimum value]: ");
+                        Schema.Add("\"maximum\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("Should the minimum value exclude itself? [Must be a true or a false]: ");
+                        Schema.Add("\"exclusiveMinimum\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("Should the maximum value exclude itself? [Must be a true or a false]: ");
+                        Schema.Add("\"exclusiveMaximum\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("What should this field be a multiple of? [If you want this to be set like a normal number set it to 1]: ");
+                        Schema.Add("\"multipleOf\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("What is the default value for this property? [If there should be none hit enter]: ");
+                        string Default = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(Default))
+                        {
+                            Schema.Add("\"default\": \"" + Console.ReadLine() + "\"");
+                            Schema.Add(comma);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Empty Understood");
+                        }
+                        Console.Write("What enums should be shown for this property? [If there should be none just press enter, if there are enter it in a format adjacent to '[2, -6, 0, -9]']: ");
+                        string Enums = Console.ReadLine();
+                        if (Enums.Contains('['))
+                        {
+                            Schema.Add("\"enum\": " + Enums);
+                            Schema.Add(comma);
+                        }
+                        else
+                        {
+                            Console.WriteLine("None Understood");
+                        }
+                        if (Schema.Any()) //prevent IndexOutOfRangeException for empty list
+                        {
+                            Schema.RemoveAt(Schema.Count - 1);
+                        }
                     }
                     else if (type == "Number")
                     {
-                        Schema.Add("\"type\": \"number\"" + comma);
+                        Schema.Add("\"type\": \"number\"");
+                        Schema.Add(comma);
                         Console.Write("How would you describe this property?: ");
-                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"" + comma);
+                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                        Schema.Add(comma);
+                        Console.Write("What is the minimum value allowed for this field?: ");
+                        Schema.Add("\"minimum\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("What is the maximum value allowed for this field? [Can not be below the minimum value]: ");
+                        Schema.Add("\"maximum\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("Should the minimum value exclude itself? [Must be a true or a false]: ");
+                        Schema.Add("\"exclusiveMinimum\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("Should the maximum value exclude itself? [Must be a true or a false]: ");
+                        Schema.Add("\"exclusiveMaximum\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("What should this field be a multiple of? [If you want this to be set like a normal number set it to 1]: ");
+                        Schema.Add("\"multipleOf\": " + Console.ReadLine());
+                        Schema.Add(comma);
+                        Console.Write("What is the default value for this property? [If there should be none hit enter]: ");
+                        string Default = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(Default))
+                        {
+                            Schema.Add("\"default\": \"" + Console.ReadLine() + "\"");
+                            Schema.Add(comma);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Empty Understood");
+                        }
+                        Console.Write("What enums should be shown for this property? [If there should be none just press enter, if there are enter it in a format adjacent to '[2, -6, 0,5, -9.5]']: ");
+                        string Enums = Console.ReadLine();
+                        if (Enums.Contains('['))
+                        {
+                            Schema.Add("\"enum\": " + Enums);
+                            Schema.Add(comma);
+                        }
+                        else
+                        {
+                            Console.WriteLine("None Understood");
+                        }
+                        if (Schema.Any()) //prevent IndexOutOfRangeException for empty list
+                        {
+                            Schema.RemoveAt(Schema.Count - 1);
+                        }
                     }
                     else if (type == "String")
                     {
-                        Schema.Add("\"type\": \"string\"" + comma);
+                        Schema.Add("\"type\": \"string\"");
+                        Schema.Add(comma);
                         Console.Write("How would you describe this property?: ");
-                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"" + comma);
+                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                        Schema.Add(comma);
                         Console.Write("What is the minimum length allowed for this field? [Must be a Positive Integer]: ");
-                        Schema.Add("\"minLength\": " + Console.ReadLine()  + comma);
+                        Schema.Add("\"minLength\": " + Console.ReadLine());
+                        Schema.Add(comma);
                         Console.Write("What is the maximum length allowed for this field? [Must be a Positive Integer]: ");
-                        Schema.Add("\"maxLength\": " + Console.ReadLine()  + comma);
+                        Schema.Add("\"maxLength\": " + Console.ReadLine());
+                        Schema.Add(comma);
                         Console.Write("What is the default value for this property? [If there should be none hit enter]: ");
-                        if (Console.ReadLine() != "")
+                        string Default = Console.ReadLine();
+                        if (!string.IsNullOrEmpty(Default))
                         {
-                            Schema.Add("\"default\": \"" + Console.ReadLine() + "\"" + comma);
+                            Schema.Add("\"default\": \"" + Console.ReadLine() + "\"");
+                            Schema.Add(comma);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Empty Understood");
                         }
                         Console.Write("What enums should be shown for this property? [If there should be none just press enter, if there are enter it in a format adjacent to '[\"Rhino\", \"Hippo\", \"Zebra\"]']: ");
-                        if (Console.ReadLine().Contains('['))
+                        string Enums = Console.ReadLine();
+                        if (Enums.Contains('['))
                         {
-                            Schema.Add("\"enum\": " + Console.ReadLine());
+                            Schema.Add("\"enum\": " + Enums);
+                            Schema.Add(comma);
+                        }
+                        else
+                        {
+                            Console.WriteLine("None Understood");
+                        }
+                        if (Schema.Any()) //prevent IndexOutOfRangeException for empty list
+                        {
+                            Schema.RemoveAt(Schema.Count - 1);
                         }
                     }
                     else if (type == "Object")
                     {
-                        Schema.Add("\"type\": \"object\"" + comma);
+                        Schema.Add("\"type\": \"object\"");
+                        Schema.Add(comma);
                         Console.Write("How would you describe this property?: ");
-                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"" + comma);
+                        Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                        Schema.Add(comma);
+                        Schema.Add("\"properties\": {");
+                        Console.Write("How many nested properties would you like in this object? [Positive Integer]: ");
+                        int nestedProperties = int.Parse(Console.ReadLine());
+                        int currentNestedProperties = 1;
+                        // Loop for handling nested properties
+                        while (nestedProperties >= currentNestedProperties)
+                        {
+                            Console.Write("What do you want to call nested Property #" + currentNestedProperties + "?: ");
+                            string nestedPropertyName = Console.ReadLine();
+                            Console.Write("What type should nested Property " + nestedPropertyName + " be? [Array, Boolean, Integer, Number, String, Object]: ");
+                            string nestedPropertyType = Console.ReadLine();
+                            Schema.Add("\"" + nestedPropertyName + "\": {");
+                            // Handle specific types similarly to the main properties loop
+                            if (nestedPropertyType == "Array")
+                            {
+                                Schema.Add("\"type\": \"array\"");
+                                Schema.Add(comma);
+                                Console.Write("How would you describe this property?: ");
+                                Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                                Schema.Add(comma);
+                                // Specify the type of items in the array
+                                Console.Write("What type should the array items be? [Boolean, Integer, Number, String, Object]: ");
+                                string itemType = Console.ReadLine();
+                                Schema.Add("\"items\": { \"type\": \"" + itemType + "\" }");
+                                Schema.Add(comma);
+                                // Optional fields
+                                Console.Write("What is the minimum number of items allowed? [Enter a positive integer or press enter to skip]: ");
+                                string minItems = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(minItems))
+                                {
+                                    Schema.Add("\"minItems\": " + minItems);
+                                    Schema.Add(comma);
+                                }
+                                Console.Write("What is the maximum number of items allowed? [Enter a positive integer or press enter to skip]: ");
+                                string maxItems = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(maxItems))
+                                {
+                                    Schema.Add("\"maxItems\": " + maxItems);
+                                    Schema.Add(comma);
+                                }
+                                Console.Write("Should the items in the array be unique? [true/false]: ");
+                                string uniqueItems = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(uniqueItems))
+                                {
+                                    Schema.Add("\"uniqueItems\": " + uniqueItems);
+                                    Schema.Add(comma);
+                                }
+                                // Default value for array
+                                Console.Write("What is the default value for this array? [If there should be none hit enter, otherwise enter it as an array e.g. [1,2,3]]: ");
+                                string defaultArray = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(defaultArray))
+                                {
+                                    Schema.Add("\"default\": " + defaultArray);
+                                }
+                                if (Schema.Any())
+                                {
+                                    Schema.RemoveAt(Schema.Count - 1); // Remove last comma
+                                }
+                            }
+                            else if (nestedPropertyType == "Boolean")
+                            {
+                                Schema.Add("\"type\": \"boolean\"");
+                                Schema.Add(comma);
+                                Console.Write("How would you describe this property?: ");
+                                Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                                Schema.Add(comma);
+                                Console.Write("Should this bool be exactly one value being true or false?: ");
+                                Schema.Add("\"const\": \"" + Console.ReadLine() + "\"");
+                                Schema.Add(comma);
+                                Console.Write("What is the default value for this property? [If there should be none hit enter]: ");
+                                string Default = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(Default))
+                                {
+                                    Schema.Add("\"default\": \"" + Console.ReadLine() + "\"");
+                                    Schema.Add(comma);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Empty Understood");
+                                }
+                                Console.Write("What enums should be shown for this property? [If there should be none just press enter, if there are enter it in a format adjacent to '[2, -6, 0, -9]']: ");
+                                string Enums = Console.ReadLine();
+                                if (Enums.Contains('['))
+                                {
+                                    Schema.Add("\"enum\": " + Enums);
+                                    Schema.Add(comma);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("None Understood");
+                                }
+                                if (Schema.Any()) //prevent IndexOutOfRangeException for empty list
+                                {
+                                    Schema.RemoveAt(Schema.Count - 1);
+                                }
+                            }
+                            else if (nestedPropertyType == "Integer")
+                            {
+                                Schema.Add("\"type\": \"integer\"");
+                                Schema.Add(comma);
+                                Console.Write("How would you describe this property?: ");
+                                Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                                Schema.Add(comma);
+                                Console.Write("What is the minimum value allowed for this field?: ");
+                                Schema.Add("\"minimum\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("What is the maximum value allowed for this field? [Can not be below the minimum value]: ");
+                                Schema.Add("\"maximum\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("Should the minimum value exclude itself? [Must be a true or a false]: ");
+                                Schema.Add("\"exclusiveMinimum\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("Should the maximum value exclude itself? [Must be a true or a false]: ");
+                                Schema.Add("\"exclusiveMaximum\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("What should this field be a multiple of? [If you want this to be set like a normal number set it to 1]: ");
+                                Schema.Add("\"multipleOf\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("What is the default value for this property? [If there should be none hit enter]: ");
+                                string Default = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(Default))
+                                {
+                                    Schema.Add("\"default\": \"" + Console.ReadLine() + "\"");
+                                    Schema.Add(comma);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Empty Understood");
+                                }
+                                Console.Write("What enums should be shown for this property? [If there should be none just press enter, if there are enter it in a format adjacent to '[2, -6, 0, -9]']: ");
+                                string Enums = Console.ReadLine();
+                                if (Enums.Contains('['))
+                                {
+                                    Schema.Add("\"enum\": " + Enums);
+                                    Schema.Add(comma);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("None Understood");
+                                }
+                                if (Schema.Any()) //prevent IndexOutOfRangeException for empty list
+                                {
+                                    Schema.RemoveAt(Schema.Count - 1);
+                                }
+                            }
+                            else if (nestedPropertyType == "Number")
+                            {
+                                Schema.Add("\"type\": \"number\"");
+                                Schema.Add(comma);
+                                Console.Write("How would you describe this property?: ");
+                                Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                                Schema.Add(comma);
+                                Console.Write("What is the minimum value allowed for this field?: ");
+                                Schema.Add("\"minimum\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("What is the maximum value allowed for this field? [Can not be below the minimum value]: ");
+                                Schema.Add("\"maximum\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("Should the minimum value exclude itself? [Must be a true or a false]: ");
+                                Schema.Add("\"exclusiveMinimum\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("Should the maximum value exclude itself? [Must be a true or a false]: ");
+                                Schema.Add("\"exclusiveMaximum\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("What should this field be a multiple of? [If you want this to be set like a normal number set it to 1]: ");
+                                Schema.Add("\"multipleOf\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("What is the default value for this property? [If there should be none hit enter]: ");
+                                string Default = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(Default))
+                                {
+                                    Schema.Add("\"default\": \"" + Console.ReadLine() + "\"");
+                                    Schema.Add(comma);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Empty Understood");
+                                }
+                                Console.Write("What enums should be shown for this property? [If there should be none just press enter, if there are enter it in a format adjacent to '[2, -6, 0,5, -9.5]']: ");
+                                string Enums = Console.ReadLine();
+                                if (Enums.Contains('['))
+                                {
+                                    Schema.Add("\"enum\": " + Enums);
+                                    Schema.Add(comma);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("None Understood");
+                                }
+                                if (Schema.Any()) //prevent IndexOutOfRangeException for empty list
+                                {
+                                    Schema.RemoveAt(Schema.Count - 1);
+                                }
+                            }
+                            else if (nestedPropertyType == "String")
+                            {
+                                Schema.Add("\"type\": \"string\"");
+                                Schema.Add(comma);
+                                Console.Write("How would you describe this property?: ");
+                                Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                                Schema.Add(comma);
+                                Console.Write("What is the minimum length allowed for this field? [Must be a Positive Integer]: ");
+                                Schema.Add("\"minLength\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("What is the maximum length allowed for this field? [Must be a Positive Integer]: ");
+                                Schema.Add("\"maxLength\": " + Console.ReadLine());
+                                Schema.Add(comma);
+                                Console.Write("What is the default value for this property? [If there should be none hit enter]: ");
+                                string Default = Console.ReadLine();
+                                if (!string.IsNullOrEmpty(Default))
+                                {
+                                    Schema.Add("\"default\": \"" + Console.ReadLine() + "\"");
+                                    Schema.Add(comma);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Empty Understood");
+                                }
+                                Console.Write("What enums should be shown for this property? [If there should be none just press enter, if there are enter it in a format adjacent to '[\"Rhino\", \"Hippo\", \"Zebra\"]']: ");
+                                string Enums = Console.ReadLine();
+                                if (Enums.Contains('['))
+                                {
+                                    Schema.Add("\"enum\": " + Enums);
+                                    Schema.Add(comma);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("None Understood");
+                                }
+                                if (Schema.Any()) //prevent IndexOutOfRangeException for empty list
+                                {
+                                    Schema.RemoveAt(Schema.Count - 1);
+                                }
+                            }
+                            else if (nestedPropertyType == "Object")
+                            {
+                                Schema.Add("\"type\": \"object\"");
+                                Schema.Add(comma);
+                                Console.Write("How would you describe this property?: ");
+                                Schema.Add("\"description\": \"" + Console.ReadLine() + "\"");
+                                Schema.Add(comma);
+                                Schema.Add("\"properties\": {");
+                                // Recursively handle nested object properties
+                                Console.Write("How many nested properties within this object? [Positive Integer]: ");
+                                int deeperNestedProperties = int.Parse(Console.ReadLine());
+                                int currentDeeperNestedProperties = 1;
+                                while (deeperNestedProperties >= currentDeeperNestedProperties)
+                                {
+                                    // Call this same nested property loop to handle deeper levels
+                                    Console.Write($"Define nested property #{currentDeeperNestedProperties} within this object.\n");
+                                    // Recursive logic goes here (i.e., another while loop or function call)
+                                    // Assume similar structure to this loop
+                                    currentDeeperNestedProperties++;
+                                }
+                                Schema.Add("}");
+                                if (Schema.Any())
+                                {
+                                    Schema.RemoveAt(Schema.Count - 1);
+                                }
+                            }
+                            // Finalize current nested property and move to the next one
+                            Schema.Add("}");
+                            if (currentNestedProperties < nestedProperties)
+                            {
+                                Schema.Add(comma);
+                            }
+                            currentNestedProperties++;
+                        }
+                        Schema.Add("}");
                     }
                     CurrentProperties++;
                     if (CurrentProperties < Properties && CurrentProperties > 1)
                     {
-                        Schema.Add("}" + comma);
-                    } else
+                        Schema.Add("}");
+                        Schema.Add(comma);
+                    }
+                    else
                     {
                         Schema.Add("}");
                     }
                 }
                 Schema.Add("}");
+                Console.Clear();
+                Console.WriteLine(string.Join("\n", PropertiesList));
+                Console.Write("Of the above properties which ones are required? [If there should be none just press enter, if there are enter it in a format adjacent to '[\"Rhino\", \"Hippo\", \"Zebra\"]']: ");
+                string Required = Console.ReadLine();
+                if (Required.Contains('['))
+                {
+                    Schema.Add(comma);
+                    Schema.Add("\"required\": " + Required);
+                }
+                else
+                {
+                    Console.WriteLine("None Understood");
+                }
                 Schema.Add("}");
                 Console.Clear();
                 Console.WriteLine(string.Join("\n", Schema));
             }
         }
     }
-
     public static void JSON()
     {
         string schemaFilePath = Path.Combine(Directory.GetCurrentDirectory(), $"schema.json");
-
         if (File.Exists(schemaFilePath))
         {
             Console.Clear();
@@ -280,14 +734,11 @@ class Program
             Main();
         }
     }
-
     public static void ConfigureApplication()
     {
         string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
-
         // Dictionary to store config key-value pairs
         Dictionary<string, string> configValues = new Dictionary<string, string>();
-
         // Read config file
         foreach (var line in File.ReadLines(configPath))
         {
@@ -302,13 +753,11 @@ class Program
                 }
             }
         }
-
         // Function to safely get a config value, with a default fallback
         string GetConfigValue(string key, string defaultValue)
         {
             return configValues.ContainsKey(key) ? configValues[key] : defaultValue;
         }
-
         // Parse config values with defaults if the key doesn't exist
         bool propertyDescriptions = bool.Parse(GetConfigValue("PropertyDescriptions", "true"));
         bool propertySyntaxShown = bool.Parse(GetConfigValue("PropertySyntaxShown", "true"));
@@ -320,7 +769,6 @@ class Program
         bool saveSchemaWithCustomNames = bool.Parse(GetConfigValue("SaveSchemaWithCustomNames", "false"));
         bool defaultCaseCorrection = bool.Parse(GetConfigValue("DefaultCaseCorrection", "true"));
         bool descriptionsForSchemaProperties = bool.Parse(GetConfigValue("DescriptionsForSchemaProperties", "false"));
-
         // Prompt user for input and update the config values
         configValues["PropertyDescriptions"] = PromptUser("Should Property Descriptions be shown?", propertyDescriptions);
         configValues["PropertySyntaxShown"] = PromptUser("Should Property Syntax be shown?", propertySyntaxShown);
@@ -332,7 +780,6 @@ class Program
         configValues["SaveSchemaWithCustomNames"] = PromptUser("Should schemas be saved with custom names?", saveSchemaWithCustomNames);
         configValues["DefaultCaseCorrection"] = PromptUser("Should default case correction be applied?", defaultCaseCorrection);
         configValues["DescriptionsForSchemaProperties"] = PromptUser("Should Schema Properties have descriptions?", descriptionsForSchemaProperties);
-
         // Save the updated config values back to the config file
         using (StreamWriter sw = new StreamWriter(configPath))
         {
@@ -341,18 +788,15 @@ class Program
                 sw.WriteLine($"{entry.Key} = {entry.Value};");
             }
         }
-
         Console.WriteLine("Config has been updated successfully.");
         Console.Clear();
         Main();
     }
-
     // Helper methods remain the same as in your original code
     static string PromptUser(string promptMessage, bool currentValue)
     {
         Console.WriteLine($"{promptMessage} (Current value: {currentValue}) [y/n]:");
         string input = Console.ReadLine().Trim();
-
         if (input.Equals("y", StringComparison.OrdinalIgnoreCase))
         {
             return "true";
@@ -368,12 +812,10 @@ class Program
             return PromptUser(promptMessage, currentValue); // Recursively call until valid input
         }
     }
-
     static string PromptUser(string promptMessage, string currentValue)
     {
         Console.WriteLine($"{promptMessage} (Current value: {currentValue}) [enter a new value or press enter to keep current value]:");
         string input = Console.ReadLine().Trim();
-
         if (string.IsNullOrEmpty(input))
         {
             return currentValue; // Keep the current value if the user presses enter
