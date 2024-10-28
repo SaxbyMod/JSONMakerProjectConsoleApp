@@ -1,0 +1,21 @@
+{
+"$schema": "https://json-schema.org/draft-04/schema#"
+,
+"title": "Schema"
+,
+"description": "Schema"
+,
+"type": "object"
+,
+"properties": {
+"String": {
+"type": "string"
+,
+"description": "String"
+,
+"minLength": 1
+,
+"maxLength": 9
+}
+}
+}

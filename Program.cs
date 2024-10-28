@@ -143,6 +143,10 @@ class Program
             {
                 MakeSchema();
             }
+            else if (choice2 == "Save Schema")
+            {
+                Console.WriteLine("Make a Schema First!");
+            }
         }
         else
         {
@@ -150,9 +154,13 @@ class Program
             Console.Write("What do you want to do?\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema\n\nYour choice Here: ");
             string choice2 = Console.ReadLine();
 
-            if (choice2 == "Save Schema")
+            if (choice2 == "Make Schema")
             {
-
+                MakeSchema();
+            }
+            else if (choice2 == "Save Schema")
+            {
+                Console.WriteLine("Make a Schema First!");
             }
         }
     }
@@ -186,6 +194,10 @@ class Program
             {
                 MakeSchema();
             }
+            else if (choice2 == "Save Schema")
+            {
+                SaveSchema(FinalSchema);
+            }
         }
         else
         {
@@ -193,9 +205,13 @@ class Program
             Console.Write("What do you want to do?\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema\n\nYour choice Here: ");
             string choice2 = Console.ReadLine();
 
-            if (choice2 == "Save Schema")
+            if (choice2 == "Make Schema")
             {
-                SaveSchemaToFile(FinalSchema);
+                MakeSchema();
+            }
+            else if (choice2 == "Save Schema")
+            {
+                SaveSchema(FinalSchema);
             }
         }
     }
@@ -1309,10 +1325,12 @@ class Program
         ReturningSchema(Schema);
     }
 
-    public static void SaveSchemaToFile(List<string> schema)
+    public static void SaveSchema(List<string> schema)
     {
+        // Load configuration values from config.txt
         string configPath = Path.Combine(Directory.GetCurrentDirectory(), "config.txt");
         Dictionary<string, string> configValues = new Dictionary<string, string>();
+
         foreach (var line in File.ReadLines(configPath))
         {
             if (line.Contains(" = "))
@@ -1326,8 +1344,15 @@ class Program
                 }
             }
         }
+
+        // Get the schema path and custom name setting from config
         string schemaDirectory = configValues.GetValueOrDefault("SaveFilePath[Schema]", Directory.GetCurrentDirectory());
         bool useCustomNames = bool.TryParse(configValues.GetValueOrDefault("SaveSchemaWithCustomNames", "false"), out bool custom) && custom;
+
+        // Ensure the directory exists
+        Directory.CreateDirectory(schemaDirectory);
+
+        // Determine file path based on custom name setting
         string filePath;
         if (useCustomNames)
         {
@@ -1339,8 +1364,10 @@ class Program
         {
             filePath = Path.Combine(schemaDirectory, "default_schema.json");
         }
+
         try
         {
+            // Save schema to the determined file path
             File.WriteAllLines(filePath, schema);
             Console.WriteLine($"Schema saved to file: {filePath}");
         }
