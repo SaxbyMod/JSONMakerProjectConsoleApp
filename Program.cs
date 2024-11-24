@@ -1,4 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 class Program
 {
     // Color Lists
@@ -43,6 +46,7 @@ class Program
                 sw.WriteLine("DescriptionsForSchemaProperties = false");
             }
         }
+        JSONGrabber();
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         foreach (var line in File.ReadLines(configPath))
         {
@@ -187,7 +191,7 @@ class Program
         if (colorfulText != false)
         {
             Console.Clear();
-            Console.Write(ResetColor + BoldColorList[3] + "What do you want to do?" + ResetColor + HighIntensityUnderlineColorList[4] + "\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema" + ResetColor + BoldColorList[3] + "\n\nYour choice Here: " + ResetColor);
+            Console.Write(ResetColor + BoldColorList[3] + "What do you want to do?" + ResetColor + HighIntensityUnderlineColorList[4] + "\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema\n* Back" + ResetColor + BoldColorList[3] + "\n\nYour choice Here: " + ResetColor);
             string choice2 = Console.ReadLine();
             // Schema Stuff
             if (choice2 == "Make Schema")
@@ -198,11 +202,15 @@ class Program
             {
                 SaveSchema(FinalSchema);
             }
+            else if (choice2 == "Back")
+            {
+                Main();
+            }
         }
         else
         {
             Console.Clear();
-            Console.Write("What do you want to do?\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema\n\nYour choice Here: ");
+            Console.Write("What do you want to do?\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema\n* Back\n\nYour choice Here: ");
             string choice2 = Console.ReadLine();
 
             if (choice2 == "Make Schema")
@@ -212,6 +220,9 @@ class Program
             else if (choice2 == "Save Schema")
             {
                 SaveSchema(FinalSchema);
+            } else if (choice2 == "Back")
+            {
+                Main();
             }
         }
     }
@@ -1365,39 +1376,393 @@ class Program
             filePath = Path.Combine(schemaDirectory, "default_schema.json");
         }
 
+        // Process schema to shift commas to the previous line
+        List<string> processedSchema = new List<string>();
+        for (int i = 0; i < schema.Count; i++)
+        {
+            string line = schema[i].TrimEnd();
+            if (line.StartsWith(",") && i > 0)
+            {
+                // Append the comma to the previous line
+                processedSchema[processedSchema.Count - 1] += line;
+            }
+            else
+            {
+                // Add the line as is
+                processedSchema.Add(line);
+            }
+        }
+
         try
         {
-            // Save schema to the determined file path
-            File.WriteAllLines(filePath, schema);
+            // Save processed schema to the determined file path
+            File.WriteAllLines(filePath, processedSchema);
             Console.WriteLine($"Schema saved to file: {filePath}");
         }
         catch (Exception ex)
         {
             Console.WriteLine("Error saving schema to file: " + ex.Message);
         }
+        Schema();
     }
 
+    public static void JSONGrabber()
+    {
+        List<string> JsonFiles = new List<string>();
+        List<string> Schemas = new List<string>();
+
+        string jsonsDir = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
+        string schemasDir = Path.Combine(Directory.GetCurrentDirectory(), "schemas");
+
+        if (Directory.Exists(jsonsDir))
+        {
+            JsonFiles.AddRange(Directory.GetFiles(jsonsDir, "*.json").Select(Path.GetFileName));
+        }
+        else
+        {
+            Console.WriteLine("The 'jsons' folder does not exist.");
+        }
+
+        if (Directory.Exists(schemasDir))
+        {
+            Schemas.AddRange(Directory.GetDirectories(schemasDir).Select(dir => new DirectoryInfo(dir).Name));
+        }
+        else
+        {
+            Console.WriteLine("The 'schemas' folder does not exist.");
+        }
+
+        string tempListSaveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "templistsave.txt");
+
+        try
+        {
+            using (StreamWriter writer = new StreamWriter(tempListSaveFilePath, false))
+            {
+                writer.WriteLine("JSON Files:");
+                JsonFiles.ForEach(writer.WriteLine);
+
+                writer.WriteLine("\nSchema Directories:");
+                Schemas.ForEach(writer.WriteLine);
+            }
+
+            Console.WriteLine($"Lists saved to file: {tempListSaveFilePath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving lists to file: {ex.Message}");
+        }
+    }
+
+    private static int GetValidUserInput(int min, int max)
+    {
+        while (true)
+        {
+            Console.Write($"Enter a number between {min} and {max}: ");
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= min && choice <= max)
+            {
+                return choice;
+            }
+            Console.WriteLine("Invalid input. Please try again.");
+        }
+    }
 
     public static void JSON()
     {
-        string schemaFilePath = Path.Combine(Directory.GetCurrentDirectory(), $"schema.json");
-        if (File.Exists(schemaFilePath))
+        string configPath = Path.Combine(Directory.GetCurrentDirectory(), "config.txt");
+        Dictionary<string, string> configValues = new Dictionary<string, string>();
+        foreach (var line in File.ReadLines(configPath))
+        {
+            if (line.Contains(" = "))
+            {
+                string[] parts = line.Split(new string[] { " = " }, StringSplitOptions.None);
+                if (parts.Length == 2)
+                {
+                    string key = parts[0].Trim();
+                    string value = parts[1].Trim().Trim(';');
+                    configValues[key] = value;
+                }
+            }
+        }
+
+        // Retrieve the configuration values for JSON saving
+        string saveFilePath = configValues.ContainsKey("SaveFilePath[JSON]") ? configValues["SaveFilePath[JSON]"] : "jsons";
+        bool defaultCaseCorrection = bool.Parse(configValues.ContainsKey("DefaultCaseCorrection") ? configValues["DefaultCaseCorrection"] : "true");
+        bool saveSchemaWithCustomNames = bool.Parse(configValues.ContainsKey("SaveJSONSWithCustomNames") ? configValues["SaveJSONSWithCustomNames"] : "false");
+        bool colorfulText = bool.Parse(configValues.ContainsKey("ColorfulText") ? configValues["ColorfulText"] : "true");
+        string schemaFilePath = Path.Combine(Directory.GetCurrentDirectory(), "schemas", "default_schema.json");
+
+        // Existing color configuration and prompts
+        if (colorfulText)
         {
             Console.Clear();
-            Console.WriteLine("What do you want to do?\nMake JSON\nEdit JSON[FUTURE]\nSave JSON[FUTURE]");
-            string choice3 = Console.ReadLine();
-            // Add your JSON logic here
+            Console.Write(ResetColor + BoldColorList[3] + "What do you want to do?" + ResetColor + HighIntensityUnderlineColorList[4] +
+                "\n\n* Make JSON\n* Edit JSON [FUTURE]\n* Save JSON\n* Back" + ResetColor + BoldColorList[3] +
+                "\n\nYour choice Here: " + ResetColor);
+            string choice2 = Console.ReadLine();
+
+            // Handle JSON actions
+            if (choice2 == "Make JSON")
+            {
+                MakeJSON(schemaFilePath);
+            }
+            else if (choice2 == "Save JSON")
+            {
+                // Prompt for the JSON content generated from MakeJSON
+                string jsonContent = GenerateJSONContent(schemaFilePath); // Generate content based on the schema
+                SaveJSON(jsonContent, saveFilePath, saveSchemaWithCustomNames, defaultCaseCorrection);
+            } else if (choice2 == "Back")
+            {
+                Main();
+            }
         }
         else
         {
             Console.Clear();
-            Console.WriteLine("Provide me A Json Schema or I can't do anything for You!");
-            Console.WriteLine("To Provide me one, go to this app's directory and add a file called 'schema.json'. Make sure there is info inside the file.");
+            Console.Write("What do you want to do?\n\n* Make JSON\n* Edit JSON [FUTURE]\n* Save JSON\n* Back\n\nYour choice Here: ");
+            string choice2 = Console.ReadLine();
+
+            if (choice2 == "Make JSON")
+            {
+                MakeJSON(schemaFilePath);
+            }
+            else if (choice2 == "Save JSON")
+            {
+                // Placeholder for saving
+                string jsonContent = GenerateJSONContent(schemaFilePath); // This method generates the JSON data
+                SaveJSON(jsonContent, saveFilePath, saveSchemaWithCustomNames, defaultCaseCorrection);
+            }
+            else if (choice2 == "Back")
+            {
+                Main();
+            }
+        }
+
+        // Handle schema file selection if required
+        if (saveSchemaWithCustomNames)
+        {
+            string tempListSaveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "templistsave.txt");
+
+            if (!File.Exists(tempListSaveFilePath))
+            {
+                Console.WriteLine("The file 'templistsave.txt' does not exist.");
+                return;
+            }
+
+            try
+            {
+                List<string> schemas = new List<string>();
+                using (StreamReader reader = new StreamReader(tempListSaveFilePath))
+                {
+                    string line;
+                    bool readingSchemas = false;
+
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        if (line.StartsWith("Schema Directories:"))
+                        {
+                            readingSchemas = true;
+                            continue;
+                        }
+
+                        if (readingSchemas && !string.IsNullOrWhiteSpace(line))
+                        {
+                            schemas.Add(line.Trim());
+                        }
+                    }
+                }
+
+                Console.WriteLine("\nSchema Directories:");
+                for (int i = 0; i < schemas.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {schemas[i]}");
+                }
+
+                Console.WriteLine("Select a Schema directory by number (or 0 to skip):");
+                int selectedSchemaIndex = GetValidUserInput(0, schemas.Count) - 1;
+
+                schemaFilePath = selectedSchemaIndex >= 0
+                    ? Path.Combine(Directory.GetCurrentDirectory(), "schemas", schemas[selectedSchemaIndex], "default_schema.json")
+                    : Path.Combine(Directory.GetCurrentDirectory(), "schemas", "default_schema.json");
+
+                Console.WriteLine($"Selected Schema Path: {schemaFilePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing the file: {ex.Message}");
+                return;
+            }
+        }
+
+        // Ensure schema file exists before proceeding
+        if (File.Exists(schemaFilePath))
+        {
+            // Proceed to make or save JSON
+        }
+        else
+        {
+            Console.Clear();
+            Console.WriteLine("Provide me a JSON Schema or I can't do anything for you!");
+            Console.WriteLine("To provide me one, go to this app's directory and add a file called 'schemas/default_schema.json'. Make sure there is info inside the file.");
             Console.ReadLine();
             Main();
         }
     }
-    public static void ConfigureApplication()
+
+    public static void SaveJSON(string jsonContent, string saveFilePath, bool saveWithCustomNames, bool defaultCaseCorrection)
+    {
+        // Ensure the directory exists
+        string fullSavePath = Path.Combine(Directory.GetCurrentDirectory(), saveFilePath);
+        if (!Directory.Exists(fullSavePath))
+        {
+            Directory.CreateDirectory(fullSavePath);
+        }
+
+        string fileName = saveWithCustomNames ? "custom_output.json" : "output.json";
+
+        // Apply case correction if enabled
+        if (defaultCaseCorrection)
+        {
+            jsonContent = ApplyCaseCorrection(jsonContent);
+        }
+
+        string filePath = Path.Combine(fullSavePath, fileName);
+
+        try
+        {
+            File.WriteAllText(filePath, jsonContent);
+            Console.WriteLine($"\nJSON successfully saved to: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving the JSON file: {ex.Message}");
+        }
+        JSON();
+    }
+
+
+
+    public static void MakeJSON(string schemaPath)
+    {
+        // Ensure schema file exists
+        if (!File.Exists(schemaPath))
+        {
+            Console.WriteLine($"Schema file not found: {schemaPath}");
+            return;
+        }
+
+        try
+        {
+            // Read and parse the schema file
+            string schemaContent = File.ReadAllText(schemaPath);
+            var schema = JsonConvert.DeserializeObject<Dictionary<string, object>>(schemaContent);
+
+            if (schema == null || !schema.ContainsKey("properties"))
+            {
+                Console.WriteLine("Invalid schema format. Ensure it has a 'properties' section.");
+                return;
+            }
+
+            // Process schema properties
+            var properties = schema["properties"] as Newtonsoft.Json.Linq.JObject;
+            if (properties == null)
+            {
+                Console.WriteLine("Schema 'properties' section is not valid.");
+                return;
+            }
+
+            // Generate JSON data
+            var jsonData = ProcessSchema(properties);
+
+            // Serialize to JSON (formatting with indents)
+            string jsonOutput = JsonConvert.SerializeObject(jsonData, Formatting.Indented);
+
+            // Output the generated JSON to console (you can choose to save it later in the 'Save JSON [FUTURE]' section)
+            Console.WriteLine("\nGenerated JSON:");
+            Console.WriteLine(jsonOutput);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing the schema: {ex.Message}");
+        }
+        JSON();
+    }
+
+
+    public static string ApplyCaseCorrection(string jsonContent)
+    {
+        // Implement case correction logic here (for example, convert to camelCase)
+        var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
+        var correctedJson = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+
+        return correctedJson; // This should be the JSON with corrected key casing (e.g., camelCase)
+    }
+
+    public static string GenerateJSONContent(string schemaPath)
+    {
+        // This method generates the JSON content based on the schema
+        string schemaContent = File.ReadAllText(schemaPath);
+        var schema = JsonConvert.DeserializeObject<Dictionary<string, object>>(schemaContent);
+        var properties = schema["properties"] as Newtonsoft.Json.Linq.JObject;
+        var jsonData = ProcessSchema(properties);
+
+        return JsonConvert.SerializeObject(jsonData, Formatting.Indented);
+    }
+
+    private static object ProcessSchema(Newtonsoft.Json.Linq.JObject properties)
+    {
+        var result = new Dictionary<string, object>();
+
+        foreach (var property in properties.Properties())
+        {
+            var attributes = property.Value as Newtonsoft.Json.Linq.JObject;
+            if (attributes == null) continue;
+
+            string type = attributes.GetValue("type")?.ToString() ?? "string";
+
+            result[property.Name] = type switch
+            {
+                "object" => ProcessSchema(attributes.GetValue("properties") as Newtonsoft.Json.Linq.JObject),
+                "array" => ProcessArray(attributes, property.Name),
+                _ => GetFieldValue(attributes, property.Name, type)
+            };
+        }
+
+        return result;
+    }
+
+    private static object GetFieldValue(Newtonsoft.Json.Linq.JObject attributes, string fieldName, string type)
+    {
+        Console.Write($"{fieldName} ({type}): ");
+        string input = Console.ReadLine();
+
+        if (type == "integer" && int.TryParse(input, out int intValue))
+        {
+            return intValue;
+        }
+
+        return input; // Default to string if type is unsupported
+    }
+
+    private static List<object> ProcessArray(Newtonsoft.Json.Linq.JObject attributes, string fieldName)
+    {
+        var items = new List<object>();
+        Console.WriteLine($"Enter values for array '{fieldName}'. Type 'done' to finish.");
+
+        while (true)
+        {
+            Console.Write($"Item {items.Count + 1}: ");
+            string input = Console.ReadLine();
+            if (input?.ToLower() == "done") break;
+
+            items.Add(input);
+        }
+
+        return items;
+    }
+
+
+
+public static void ConfigureApplication()
     {
         string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
         // Dictionary to store config key-value pairs
@@ -1427,11 +1792,12 @@ class Program
         bool showFieldTypeAsName = bool.Parse(GetConfigValue("ShowFieldTypeAsName", "true"));
         string jsonExtensionType = GetConfigValue("JsonExtentsionType", ".json");
         bool colorfulText = bool.Parse(GetConfigValue("ColorfulText", "true"));
-        string saveFilePathJson = GetConfigValue("SaveFilePath[JSON]", "default");
-        string saveFilePathSchema = GetConfigValue("SaveFilePath[Schema]", "default");
+        string saveFilePathJson = GetConfigValue("SaveFilePath[JSON]", "jsons");
+        string saveFilePathSchema = GetConfigValue("SaveFilePath[Schema]", "schemas");
         bool saveSchemaWithCustomNames = bool.Parse(GetConfigValue("SaveSchemaWithCustomNames", "false"));
         bool defaultCaseCorrection = bool.Parse(GetConfigValue("DefaultCaseCorrection", "true"));
         bool descriptionsForSchemaProperties = bool.Parse(GetConfigValue("DescriptionsForSchemaProperties", "false"));
+        bool saveJSONSWithCustomNames = bool.Parse(GetConfigValue("SaveJSONSWithCustomNames", "false"));
         // Prompt user for input and update the config values
         configValues["PropertyDescriptions"] = PromptUser("Should Property Descriptions be shown?", propertyDescriptions);
         configValues["PropertySyntaxShown"] = PromptUser("Should Property Syntax be shown?", propertySyntaxShown);
@@ -1443,6 +1809,7 @@ class Program
         configValues["SaveSchemaWithCustomNames"] = PromptUser("Should schemas be saved with custom names?", saveSchemaWithCustomNames);
         configValues["DefaultCaseCorrection"] = PromptUser("Should default case correction be applied?", defaultCaseCorrection);
         configValues["DescriptionsForSchemaProperties"] = PromptUser("Should Schema Properties have descriptions?", descriptionsForSchemaProperties);
+        configValues["SaveJSONSWithCustomNames"] = PromptUser("Should JSONS be saved with custom names?", saveJSONSWithCustomNames);
         // Save the updated config values back to the config file
         using (StreamWriter sw = new StreamWriter(configPath))
         {

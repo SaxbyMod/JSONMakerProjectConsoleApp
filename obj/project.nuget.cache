@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "Dp8UyopYotMAeUAXeVMbRRNQFHzuzd0L+yN+w/NsPS9J43BmzqlY6nm6S5zaRTOXo4fSEFiyWBVTqakUmuQiGw==",
+  "dgSpecHash": "NeMrk0qBn1Y=",
   "success": true,
   "projectFilePath": "C:\\Users\\Thinc\\source\\repos\\JSONMakerProjectConsoleApp\\JSONMakerProjectConsoleApp\\JSONMakerProjectConsoleApp.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Thinc\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\Thinc\\.nuget\\packages\\newtonsoft.json.schema\\4.0.1\\newtonsoft.json.schema.4.0.1.nupkg.sha512"
+  ],
   "logs": []
 }
