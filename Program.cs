@@ -1453,21 +1453,11 @@ class Program
         }
     }
 
-    private static int GetValidUserInput(int min, int max)
-    {
-        while (true)
-        {
-            Console.Write($"Enter a number between {min} and {max}: ");
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= min && choice <= max)
-            {
-                return choice;
-            }
-            Console.WriteLine("Invalid input. Please try again.");
-        }
-    }
-
+    private static string generatedJson = string.Empty; // Store the generated JSON here
+    private static bool jsonGenerated = new bool();
     public static void JSON()
     {
+        // Read config settings
         string configPath = Path.Combine(Directory.GetCurrentDirectory(), "config.txt");
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         foreach (var line in File.ReadLines(configPath))
@@ -1484,129 +1474,57 @@ class Program
             }
         }
 
-        // Retrieve the configuration values for JSON saving
-        string saveFilePath = configValues.ContainsKey("SaveFilePath[JSON]") ? configValues["SaveFilePath[JSON]"] : "jsons";
-        bool defaultCaseCorrection = bool.Parse(configValues.ContainsKey("DefaultCaseCorrection") ? configValues["DefaultCaseCorrection"] : "true");
-        bool saveSchemaWithCustomNames = bool.Parse(configValues.ContainsKey("SaveJSONSWithCustomNames") ? configValues["SaveJSONSWithCustomNames"] : "false");
+        // Read necessary config values
         bool colorfulText = bool.Parse(configValues.ContainsKey("ColorfulText") ? configValues["ColorfulText"] : "true");
-        string schemaFilePath = Path.Combine(Directory.GetCurrentDirectory(), "schemas", "default_schema.json");
+        string saveFilePath = configValues.ContainsKey("SaveFilePath") ? configValues["SaveFilePath"] : "default_path.json";
 
-        // Existing color configuration and prompts
+        // Show the menu
+        Console.Clear();
         if (colorfulText)
         {
-            Console.Clear();
             Console.Write(ResetColor + BoldColorList[3] + "What do you want to do?" + ResetColor + HighIntensityUnderlineColorList[4] +
                 "\n\n* Make JSON\n* Edit JSON [FUTURE]\n* Save JSON\n* Back" + ResetColor + BoldColorList[3] +
                 "\n\nYour choice Here: " + ResetColor);
-            string choice2 = Console.ReadLine();
-
-            // Handle JSON actions
-            if (choice2 == "Make JSON")
-            {
-                MakeJSON(schemaFilePath);
-            }
-            else if (choice2 == "Save JSON")
-            {
-                // Prompt for the JSON content generated from MakeJSON
-                string jsonContent = GenerateJSONContent(schemaFilePath); // Generate content based on the schema
-                SaveJSON(jsonContent, saveFilePath, saveSchemaWithCustomNames, defaultCaseCorrection);
-            } else if (choice2 == "Back")
-            {
-                Main();
-            }
         }
         else
         {
-            Console.Clear();
             Console.Write("What do you want to do?\n\n* Make JSON\n* Edit JSON [FUTURE]\n* Save JSON\n* Back\n\nYour choice Here: ");
-            string choice2 = Console.ReadLine();
-
-            if (choice2 == "Make JSON")
-            {
-                MakeJSON(schemaFilePath);
-            }
-            else if (choice2 == "Save JSON")
-            {
-                // Placeholder for saving
-                string jsonContent = GenerateJSONContent(schemaFilePath); // This method generates the JSON data
-                SaveJSON(jsonContent, saveFilePath, saveSchemaWithCustomNames, defaultCaseCorrection);
-            }
-            else if (choice2 == "Back")
-            {
-                Main();
-            }
         }
 
-        // Handle schema file selection if required
-        if (saveSchemaWithCustomNames)
+        string choice2 = Console.ReadLine();
+        Console.WriteLine("You selected: " + choice2); // Debugging line to see if input is read correctly
+
+        if (choice2 == "Make JSON")
         {
-            string tempListSaveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "templistsave.txt");
-
-            if (!File.Exists(tempListSaveFilePath))
+            string generatedJson = MakeJSON(configValues); // Generate JSON
+            if (!string.IsNullOrEmpty(generatedJson))
             {
-                Console.WriteLine("The file 'templistsave.txt' does not exist.");
-                return;
-            }
-
-            try
-            {
-                List<string> schemas = new List<string>();
-                using (StreamReader reader = new StreamReader(tempListSaveFilePath))
-                {
-                    string line;
-                    bool readingSchemas = false;
-
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        if (line.StartsWith("Schema Directories:"))
-                        {
-                            readingSchemas = true;
-                            continue;
-                        }
-
-                        if (readingSchemas && !string.IsNullOrWhiteSpace(line))
-                        {
-                            schemas.Add(line.Trim());
-                        }
-                    }
-                }
-
-                Console.WriteLine("\nSchema Directories:");
-                for (int i = 0; i < schemas.Count; i++)
-                {
-                    Console.WriteLine($"{i + 1}. {schemas[i]}");
-                }
-
-                Console.WriteLine("Select a Schema directory by number (or 0 to skip):");
-                int selectedSchemaIndex = GetValidUserInput(0, schemas.Count) - 1;
-
-                schemaFilePath = selectedSchemaIndex >= 0
-                    ? Path.Combine(Directory.GetCurrentDirectory(), "schemas", schemas[selectedSchemaIndex], "default_schema.json")
-                    : Path.Combine(Directory.GetCurrentDirectory(), "schemas", "default_schema.json");
-
-                Console.WriteLine($"Selected Schema Path: {schemaFilePath}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error processing the file: {ex.Message}");
-                return;
+                jsonGenerated = true; // Set flag to true
             }
         }
-
-        // Ensure schema file exists before proceeding
-        if (File.Exists(schemaFilePath))
+        else if (choice2 == "Save JSON")
         {
-            // Proceed to make or save JSON
+            if (!jsonGenerated)
+            {
+                Console.WriteLine("First, generate the JSON by selecting 'Make JSON'.");
+            }
+            else
+            {
+                SaveJSON(generatedJson, saveFilePath, false, true); // Save the JSON
+            }
         }
-        else
+        else if (choice2 == "Back")
         {
-            Console.Clear();
-            Console.WriteLine("Provide me a JSON Schema or I can't do anything for you!");
-            Console.WriteLine("To provide me one, go to this app's directory and add a file called 'schemas/default_schema.json'. Make sure there is info inside the file.");
-            Console.ReadLine();
             Main();
         }
+        else
+        {
+            Console.WriteLine("Invalid choice. Please select again.");
+            JSON(); // Retry if the user provides invalid input
+        }
     }
+
+
 
     public static void SaveJSON(string jsonContent, string saveFilePath, bool saveWithCustomNames, bool defaultCaseCorrection)
     {
@@ -1617,7 +1535,24 @@ class Program
             Directory.CreateDirectory(fullSavePath);
         }
 
-        string fileName = saveWithCustomNames ? "custom_output.json" : "output.json";
+        string fileName = "output.json"; // Default file name
+
+        // If saveWithCustomNames is true, ask for the custom file name
+        if (saveWithCustomNames)
+        {
+            Console.WriteLine("Enter the custom name for the JSON file (without extension): ");
+            string customFileName = Console.ReadLine().Trim();
+
+            // Ensure the file name is not empty and doesn't contain invalid characters
+            if (string.IsNullOrEmpty(customFileName) || customFileName.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
+            {
+                Console.WriteLine("Invalid file name. Using default file name.");
+            }
+            else
+            {
+                fileName = customFileName + ".json"; // Append .json extension
+            }
+        }
 
         // Apply case correction if enabled
         if (defaultCaseCorrection)
@@ -1636,18 +1571,27 @@ class Program
         {
             Console.WriteLine($"Error saving the JSON file: {ex.Message}");
         }
-        JSON();
+        JSON(); // After saving, return to the JSON menu
     }
 
 
-
-    public static void MakeJSON(string schemaPath)
+    public static string MakeJSON(Dictionary<string, string> configValues)
     {
+        // Read the "ColorfulText" option from configValues
+        bool colorfulText = bool.Parse(configValues.ContainsKey("ColorfulText") ? configValues["ColorfulText"] : "true");
+
+        // Other options from configValues
+        bool showDescriptions = bool.Parse(configValues.ContainsKey("ShowDescriptions") ? configValues["ShowDescriptions"] : "true");
+        bool showSyntax = bool.Parse(configValues.ContainsKey("ShowSyntax") ? configValues["ShowSyntax"] : "true");
+        bool showFieldType = bool.Parse(configValues.ContainsKey("ShowFieldType") ? configValues["ShowFieldType"] : "true");
+
+        string schemaPath = Path.Combine(Directory.GetCurrentDirectory(), "schemas", "default_schema.json");
+
         // Ensure schema file exists
         if (!File.Exists(schemaPath))
         {
             Console.WriteLine($"Schema file not found: {schemaPath}");
-            return;
+            return null;
         }
 
         try
@@ -1659,56 +1603,247 @@ class Program
             if (schema == null || !schema.ContainsKey("properties"))
             {
                 Console.WriteLine("Invalid schema format. Ensure it has a 'properties' section.");
-                return;
+                return null;
             }
 
-            // Process schema properties
+            // Process schema properties with validation
             var properties = schema["properties"] as Newtonsoft.Json.Linq.JObject;
             if (properties == null)
             {
                 Console.WriteLine("Schema 'properties' section is not valid.");
-                return;
+                return null;
             }
 
-            // Generate JSON data
+            // Generate JSON data with validation enabled
             var jsonData = ProcessSchema(properties);
 
             // Serialize to JSON (formatting with indents)
             string jsonOutput = JsonConvert.SerializeObject(jsonData, Formatting.Indented);
 
-            // Output the generated JSON to console (you can choose to save it later in the 'Save JSON [FUTURE]' section)
-            Console.WriteLine("\nGenerated JSON:");
-            Console.WriteLine(jsonOutput);
+            // Return the generated JSON as a string instead of printing it
+            return jsonOutput;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error processing the schema: {ex.Message}");
+            return null;
         }
-        JSON();
     }
 
-
-    public static string ApplyCaseCorrection(string jsonContent)
+    private static object GetFieldValue(Newtonsoft.Json.Linq.JObject attributes, string fieldName, string type, int level = 0)
     {
-        // Implement case correction logic here (for example, convert to camelCase)
-        var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
-        var correctedJson = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+        string input;
+        object value = null;
 
-        return correctedJson; // This should be the JSON with corrected key casing (e.g., camelCase)
+        // Create indentation based on the nesting level
+        string indent = new string(' ', level * 2);
+
+        // Display the main field information with indentation
+        Console.WriteLine($"{indent}{fieldName} ({type})");
+
+        // Display Validation Syntax for all types
+        Console.WriteLine($"{indent}Validation Syntax:");
+        AddValidationSyntax(attributes, level);
+
+        // Display the description for the field
+        string description = attributes.GetValue("description")?.ToString() ?? $"{fieldName} Description";
+        Console.WriteLine($"{indent}{description}:");
+
+        // Process based on the type of the field
+        switch (type.ToLower())
+        {
+            case "integer":
+            case "number":
+                // Loop until a valid input is provided
+                while (true)
+                {
+                    string valueType = type.ToLower();
+                    Console.Write($"{indent}Enter a {valueType} value for {fieldName} (or press Enter to use the default): ");
+                    input = Console.ReadLine();
+
+                    // Handle default value
+                    if (string.IsNullOrWhiteSpace(input) && attributes.ContainsKey("default"))
+                    {
+                        value = attributes["default"];
+                        Console.WriteLine($"{indent}Using default value: {value}");
+                        break;
+                    }
+
+                    // Try parsing the input as either an integer or a number
+                    if (double.TryParse(input, out double parsedValue))
+                    {
+                        // Ensure integers are whole numbers if the type is "integer"
+                        if (type.ToLower() == "integer" && parsedValue % 1 != 0)
+                        {
+                            Console.WriteLine($"{indent}Value must be a whole number. Try again.");
+                            continue;
+                        }
+
+                        if (ValidateNumber(attributes, parsedValue, indent))
+                        {
+                            value = type.ToLower() == "integer" ? (int)parsedValue : parsedValue;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{indent}Invalid {valueType}. Please enter a valid {valueType}.");
+                    }
+                }
+                break;
+
+            case "string":
+                Console.Write($"{indent}Enter a string value for {fieldName}: ");
+                input = Console.ReadLine();
+                value = string.IsNullOrWhiteSpace(input) ? null : input;
+                break;
+
+            case "array":
+                value = ProcessArray(attributes, fieldName, level);
+                break;
+
+            case "enum":
+                value = ProcessEnum(attributes, fieldName, level);
+                break;
+
+            case "object":
+                value = ProcessObject(attributes, fieldName, level);
+                break;
+        }
+
+        return value;
     }
 
-    public static string GenerateJSONContent(string schemaPath)
+    private static bool ValidateNumber(Newtonsoft.Json.Linq.JObject attributes, double value, string indent)
     {
-        // This method generates the JSON content based on the schema
-        string schemaContent = File.ReadAllText(schemaPath);
-        var schema = JsonConvert.DeserializeObject<Dictionary<string, object>>(schemaContent);
-        var properties = schema["properties"] as Newtonsoft.Json.Linq.JObject;
-        var jsonData = ProcessSchema(properties);
+        // Minimum and exclusiveMinimum checks
+        if (attributes.ContainsKey("minimum") && value < (double)attributes["minimum"])
+        {
+            Console.WriteLine($"{indent}Value must be greater than or equal to {(double)attributes["minimum"]}. Try again.");
+            return false;
+        }
+        if (attributes.ContainsKey("exclusiveMinimum") && (bool)attributes["exclusiveMinimum"] && value <= (double)attributes["minimum"])
+        {
+            Console.WriteLine($"{indent}Value must be greater than {(double)attributes["minimum"]}. Try again.");
+            return false;
+        }
 
-        return JsonConvert.SerializeObject(jsonData, Formatting.Indented);
+        // Maximum and exclusiveMaximum checks
+        if (attributes.ContainsKey("maximum") && value > (double)attributes["maximum"])
+        {
+            Console.WriteLine($"{indent}Value cannot be greater than {(double)attributes["maximum"]}. Try again.");
+            return false;
+        }
+        if (attributes.ContainsKey("exclusiveMaximum") && (bool)attributes["exclusiveMaximum"] && value >= (double)attributes["maximum"])
+        {
+            Console.WriteLine($"{indent}Value must be less than {(double)attributes["maximum"]}. Try again.");
+            return false;
+        }
+
+        // Enum validation
+        if (attributes.ContainsKey("enum"))
+        {
+            var validValues = attributes["enum"].Select(v => (double)v).ToArray();
+            if (!validValues.Contains(value))
+            {
+                Console.WriteLine($"{indent}Value must be one of the following: {string.Join(", ", validValues)}. Try again.");
+                return false;
+            }
+        }
+
+        // MultipleOf validation
+        if (attributes.ContainsKey("multipleOf") && value % (double)attributes["multipleOf"] != 0)
+        {
+            Console.WriteLine($"{indent}Value must be a multiple of {(double)attributes["multipleOf"]}. Try again.");
+            return false;
+        }
+
+        return true; // Value is valid
     }
 
-    private static object ProcessSchema(Newtonsoft.Json.Linq.JObject properties)
+
+
+    private static void AddValidationSyntax(Newtonsoft.Json.Linq.JObject attributes, int level)
+    {
+        var validationAttributes = new[] { "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "enum", "minLength", "maxLength", "minItems", "maxItems", "uniqueItems" };
+        string indent = new string(' ', level * 2);
+
+        // Check and print validation attributes for any field
+        foreach (var attr in validationAttributes)
+        {
+            if (attributes.ContainsKey(attr))
+            {
+                Console.WriteLine($"{indent}  - {attr}: {attributes[attr]}");
+            }
+        }
+
+        // If the type is array, check for items
+        if (attributes.ContainsKey("type") && attributes["type"].ToString().ToLower() == "array" && attributes.ContainsKey("items"))
+        {
+            Console.WriteLine($"{indent}  - items: {attributes["items"]}");
+        }
+    }
+
+    private static List<object> ProcessArray(Newtonsoft.Json.Linq.JObject attributes, string fieldName, int level)
+    {
+        var items = new List<object>();
+        string indent = new string(' ', level * 2);
+        Console.WriteLine($"{indent}Enter values for array '{fieldName}'. Type 'done' to finish.");
+
+        while (true)
+        {
+            Console.Write($"{indent}Item {items.Count + 1}: ");
+            string input = Console.ReadLine();
+            if (input?.ToLower() == "done") break;
+
+            items.Add(input); // Add as string for simplicity; can add further processing based on type
+        }
+
+        return items;
+    }
+
+    private static object ProcessEnum(Newtonsoft.Json.Linq.JObject attributes, string fieldName, int level)
+    {
+        var enumValues = attributes.GetValue("enum") as Newtonsoft.Json.Linq.JArray;
+        if (enumValues == null || enumValues.Count == 0)
+        {
+            Console.WriteLine($"{new string(' ', level * 2)}No enum values defined. Defaulting to string.");
+            return null;
+        }
+
+        string indent = new string(' ', level * 2);
+        Console.WriteLine($"{indent}Available values for {fieldName}:");
+        for (int i = 0; i < enumValues.Count; i++)
+        {
+            Console.WriteLine($"{indent}  {i + 1}. {enumValues[i]}");
+        }
+
+        int choice;
+        while (true)
+        {
+            Console.Write($"{indent}{fieldName} (choose a number): ");
+            if (int.TryParse(Console.ReadLine(), out choice) && choice > 0 && choice <= enumValues.Count)
+            {
+                return enumValues[choice - 1];
+            }
+            Console.WriteLine($"{indent}Invalid choice. Please select a valid number.");
+        }
+    }
+
+    private static object ProcessObject(Newtonsoft.Json.Linq.JObject attributes, string fieldName, int level)
+    {
+        string indent = new string(' ', level * 2);
+        Console.WriteLine($"{indent}Processing nested object for {fieldName}...");
+        var nestedProperties = attributes.GetValue("properties") as Newtonsoft.Json.Linq.JObject;
+        if (nestedProperties != null)
+        {
+            return ProcessSchema(nestedProperties, level + 1);
+        }
+
+        return null;
+    }
+
+    private static object ProcessSchema(Newtonsoft.Json.Linq.JObject properties, int level = 0)
     {
         var result = new Dictionary<string, object>();
 
@@ -1718,46 +1853,23 @@ class Program
             if (attributes == null) continue;
 
             string type = attributes.GetValue("type")?.ToString() ?? "string";
+            string fieldName = property.Name;
 
-            result[property.Name] = type switch
-            {
-                "object" => ProcessSchema(attributes.GetValue("properties") as Newtonsoft.Json.Linq.JObject),
-                "array" => ProcessArray(attributes, property.Name),
-                _ => GetFieldValue(attributes, property.Name, type)
-            };
+            // Validate and collect value
+            var value = GetFieldValue(attributes, fieldName, type, level);
+            result[property.Name] = value;
         }
 
         return result;
     }
 
-    private static object GetFieldValue(Newtonsoft.Json.Linq.JObject attributes, string fieldName, string type)
+    public static string ApplyCaseCorrection(string jsonContent)
     {
-        Console.Write($"{fieldName} ({type}): ");
-        string input = Console.ReadLine();
+        // Implement case correction logic here (for example, convert to camelCase)
+        var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonContent);
+        var correctedJson = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
 
-        if (type == "integer" && int.TryParse(input, out int intValue))
-        {
-            return intValue;
-        }
-
-        return input; // Default to string if type is unsupported
-    }
-
-    private static List<object> ProcessArray(Newtonsoft.Json.Linq.JObject attributes, string fieldName)
-    {
-        var items = new List<object>();
-        Console.WriteLine($"Enter values for array '{fieldName}'. Type 'done' to finish.");
-
-        while (true)
-        {
-            Console.Write($"Item {items.Count + 1}: ");
-            string input = Console.ReadLine();
-            if (input?.ToLower() == "done") break;
-
-            items.Add(input);
-        }
-
-        return items;
+        return correctedJson; // This should be the JSON with corrected key casing (e.g., camelCase)
     }
 
 

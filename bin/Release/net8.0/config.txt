@@ -8,4 +8,4 @@ SaveFilePath[Schema] = schemas;
 SaveSchemaWithCustomNames = false;
 DefaultCaseCorrection = true;
 DescriptionsForSchemaProperties = true;
-SaveJSONSWithCustomNames = false;
+SaveJSONSWithCustomNames = true;

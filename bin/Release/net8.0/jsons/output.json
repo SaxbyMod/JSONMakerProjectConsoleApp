@@ -1,8 +1,14 @@
 {
-  "Rating": 1,
+  "Rating": 5,
   "RatingContent": {
-    "Rating Name": "My Rating",
-    "Description": [],
+    "Rating Name": "Alright",
+    "Description": [
+      "The album is alright",
+      "Needs some more variation though",
+      "Try putting in some more dubstep or screams",
+      "other than that, pretty solid",
+      "Peace - Someone"
+    ],
     "Image Index": []
   }
 }
