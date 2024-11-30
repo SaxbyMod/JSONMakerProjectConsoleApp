@@ -1,6 +1,4 @@
 JSON Files:
-AlbumSucksDudes.json
-custom_output.json
 output.json
 
 Schema Directories:

@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 class Program
 {
@@ -28,7 +29,8 @@ class Program
     public static readonly string ResetColor = "\u001b[0m";
     public static void Main()
     {
-        string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
+        Console.Clear();
+        string configPath = Path.Combine(Directory.GetCurrentDirectory() + "/files", $"config.txt");
         // Check if config file exists, if not create and populate it
         if (!File.Exists(configPath))
         {
@@ -43,7 +45,6 @@ class Program
                 sw.WriteLine("SaveFilePath[Schema] = default");
                 sw.WriteLine("SaveSchemaWithCustomNames = false");
                 sw.WriteLine("DefaultCaseCorrection = true");
-                sw.WriteLine("DescriptionsForSchemaProperties = false");
             }
         }
         JSONGrabber();
@@ -119,7 +120,7 @@ class Program
     }
     public static void Schema()
     {
-        string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
+        string configPath = Path.Combine(Directory.GetCurrentDirectory() + "/files", $"config.txt");
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         foreach (var line in File.ReadLines(configPath))
         {
@@ -140,7 +141,7 @@ class Program
         if (colorfulText != false)
         {
             Console.Clear();
-            Console.Write(ResetColor + BoldColorList[3] + "What do you want to do?" + ResetColor + HighIntensityUnderlineColorList[4] + "\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema" + ResetColor + BoldColorList[3] + "\n\nYour choice Here: " + ResetColor);
+            Console.Write(ResetColor + BoldColorList[3] + "What do you want to do?" + ResetColor + HighIntensityUnderlineColorList[4] + "\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema\n* Back" + ResetColor + BoldColorList[3] + "\n\nYour choice Here: " + ResetColor);
             string choice2 = Console.ReadLine();
             // Schema Stuff
             if (choice2 == "Make Schema")
@@ -151,11 +152,18 @@ class Program
             {
                 Console.WriteLine("Make a Schema First!");
             }
+            else if (choice2 == "Back")
+            {
+                Main();
+            } else
+            {
+                Schema();
+            }
         }
         else
         {
             Console.Clear();
-            Console.Write("What do you want to do?\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema\n\nYour choice Here: ");
+            Console.Write("What do you want to do?\n\n* Make Schema\n* Edit Schema [FUTURE]\n* Save Schema\n* Back\n\nYour choice Here: ");
             string choice2 = Console.ReadLine();
 
             if (choice2 == "Make Schema")
@@ -166,11 +174,19 @@ class Program
             {
                 Console.WriteLine("Make a Schema First!");
             }
+            else if (choice2 == "Back")
+            {
+                Main();
+            }
+            else
+            {
+                Schema();
+            }
         }
     }
     public static void ReturningSchema(List<string> FinalSchema)
     {
-        string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
+        string configPath = Path.Combine(Directory.GetCurrentDirectory() + "/files", $"config.txt");
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         foreach (var line in File.ReadLines(configPath))
         {
@@ -206,6 +222,10 @@ class Program
             {
                 Main();
             }
+            else
+            {
+                Schema();
+            }
         }
         else
         {
@@ -224,11 +244,15 @@ class Program
             {
                 Main();
             }
+            else
+            {
+                Schema();
+            }
         }
     }
     public static void MakeSchema()
     {
-        string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
+        string configPath = Path.Combine(Directory.GetCurrentDirectory() + "/files", $"config.txt");
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         foreach (var line in File.ReadLines(configPath))
         {
@@ -1339,25 +1363,36 @@ class Program
     public static void SaveSchema(List<string> schema)
     {
         // Load configuration values from config.txt
-        string configPath = Path.Combine(Directory.GetCurrentDirectory(), "config.txt");
+        string configPath = Path.Combine(Directory.GetCurrentDirectory(), "files", "config.txt");
         Dictionary<string, string> configValues = new Dictionary<string, string>();
 
-        foreach (var line in File.ReadLines(configPath))
+        try
         {
-            if (line.Contains(" = "))
+            foreach (var line in File.ReadLines(configPath))
             {
-                string[] parts = line.Split(new string[] { " = " }, StringSplitOptions.None);
-                if (parts.Length == 2)
+                if (line.Contains(" = "))
                 {
-                    string key = parts[0].Trim();
-                    string value = parts[1].Trim().Trim(';');
-                    configValues[key] = value;
+                    string[] parts = line.Split(new string[] { " = " }, StringSplitOptions.None);
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0].Trim();
+                        string value = parts[1].Trim().Trim(';');
+                        configValues[key] = value;
+                    }
                 }
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading the config file: {ex.Message}");
+            return;
+        }
 
         // Get the schema path and custom name setting from config
-        string schemaDirectory = configValues.GetValueOrDefault("SaveFilePath[Schema]", Directory.GetCurrentDirectory());
+        string schemaDirectory = configValues.ContainsKey("SaveFilePath[Schema]")
+            ? Path.Combine(Directory.GetCurrentDirectory(), configValues["SaveFilePath[Schema]"])
+            : Path.Combine(Directory.GetCurrentDirectory(), "files", "schemas");
+
         bool useCustomNames = bool.TryParse(configValues.GetValueOrDefault("SaveSchemaWithCustomNames", "false"), out bool custom) && custom;
 
         // Ensure the directory exists
@@ -1369,7 +1404,16 @@ class Program
         {
             Console.WriteLine("Enter a custom schema file name (without extension): ");
             string customName = Console.ReadLine().Trim();
-            filePath = Path.Combine(schemaDirectory, customName + ".json");
+
+            if (!string.IsNullOrEmpty(customName) && customName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0)
+            {
+                filePath = Path.Combine(schemaDirectory, customName + ".json");
+            }
+            else
+            {
+                Console.WriteLine("Invalid file name. Using default name 'default_schema.json'.");
+                filePath = Path.Combine(schemaDirectory, "default_schema.json");
+            }
         }
         else
         {
@@ -1401,18 +1445,51 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error saving schema to file: " + ex.Message);
+            Console.WriteLine($"Error saving schema to file: {ex.Message}");
         }
+
         Schema();
     }
 
     public static void JSONGrabber()
     {
+        // Read configuration values
+        string configPath = Path.Combine(Directory.GetCurrentDirectory() + "/files", "config.txt");
+        Dictionary<string, string> configValues = new Dictionary<string, string>();
+
+        try
+        {
+            foreach (var line in File.ReadLines(configPath))
+            {
+                if (line.Contains("="))
+                {
+                    string[] parts = line.Split(new string[] { " = " }, StringSplitOptions.None);
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0].Trim();
+                        string value = parts[1].Trim().Trim(';');
+                        configValues[key] = value;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading the config file: {ex.Message}");
+            return;
+        }
+
+        // Retrieve paths from config
+        string jsonsDir = configValues.ContainsKey("SaveFilePath[JSON]")
+            ? Path.Combine(Directory.GetCurrentDirectory(), configValues["SaveFilePath[JSON]"])
+            : Path.Combine(Directory.GetCurrentDirectory() + "/files", "jsons");
+
+        string schemasDir = configValues.ContainsKey("SaveFilePath[Schema]")
+            ? Path.Combine(Directory.GetCurrentDirectory(), configValues["SaveFilePath[Schema]"])
+            : Path.Combine(Directory.GetCurrentDirectory() + "/files", "schemas");
+
         List<string> JsonFiles = new List<string>();
         List<string> Schemas = new List<string>();
-
-        string jsonsDir = Path.Combine(Directory.GetCurrentDirectory(), "jsons");
-        string schemasDir = Path.Combine(Directory.GetCurrentDirectory(), "schemas");
 
         if (Directory.Exists(jsonsDir))
         {
@@ -1420,7 +1497,7 @@ class Program
         }
         else
         {
-            Console.WriteLine("The 'jsons' folder does not exist.");
+            Console.WriteLine($"The JSON directory does not exist: {jsonsDir}");
         }
 
         if (Directory.Exists(schemasDir))
@@ -1429,10 +1506,11 @@ class Program
         }
         else
         {
-            Console.WriteLine("The 'schemas' folder does not exist.");
+            Console.WriteLine($"The Schemas directory does not exist: {schemasDir}");
         }
 
-        string tempListSaveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "templistsave.txt");
+        // Path for saving the output file
+        string tempListSaveFilePath = Path.Combine(Directory.GetCurrentDirectory(), "files", "templistsave.txt");
 
         try
         {
@@ -1458,7 +1536,7 @@ class Program
     public static void JSON()
     {
         // Read config settings
-        string configPath = Path.Combine(Directory.GetCurrentDirectory(), "config.txt");
+        string configPath = Path.Combine(Directory.GetCurrentDirectory() + "/files", "config.txt");
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         foreach (var line in File.ReadLines(configPath))
         {
@@ -1498,7 +1576,7 @@ class Program
 
         if (choice2 == "Make JSON")
         {
-            string generatedJson = MakeJSON(configValues); // Generate JSON
+            generatedJson = MakeJSON(configValues); // Generate JSON
             if (!string.IsNullOrEmpty(generatedJson))
             {
                 jsonGenerated = true; // Set flag to true
@@ -1513,25 +1591,54 @@ class Program
             }
             else
             {
+                Console.WriteLine("Generated JSON: " + generatedJson);
                 SaveJSON(generatedJson, saveFilePath, saveWithCustomNames, defaultCaseCorrection); // Save the JSON
                 JSON();
             }
-        }
+        } 
         else if (choice2 == "Back")
         {
             Main();
         }
         else
         {
-            Console.WriteLine("Invalid choice. Please select again.");
             JSON(); // Retry if the user provides invalid input
         }
     }
 
-
-
     public static void SaveJSON(string jsonContent, string saveFilePath, bool saveWithCustomNames, bool defaultCaseCorrection)
     {
+        // Read configuration values
+        string configPath = Path.Combine(Directory.GetCurrentDirectory(), "files", "config.txt");
+        Dictionary<string, string> configValues = new Dictionary<string, string>();
+
+        try
+        {
+            foreach (var line in File.ReadLines(configPath))
+            {
+                if (line.Contains("="))
+                {
+                    string[] parts = line.Split(new string[] { " = " }, StringSplitOptions.None);
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0].Trim();
+                        string value = parts[1].Trim().Trim(';');
+                        configValues[key] = value;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading the config file: {ex.Message}");
+            return;
+        }
+
+        // Retrieve JSON save directory from config
+        saveFilePath = configValues.ContainsKey("SaveFilePath[JSON]")
+            ? Path.Combine(Directory.GetCurrentDirectory(), configValues["SaveFilePath[JSON]"])
+            : Path.Combine(Directory.GetCurrentDirectory(), "files", "jsons");
+
         // Ensure the directory exists
         string fullSavePath = Path.Combine(Directory.GetCurrentDirectory(), saveFilePath);
         if (!Directory.Exists(fullSavePath))
@@ -1542,19 +1649,18 @@ class Program
         string fileName = "output.json"; // Default file name
 
         // If saveWithCustomNames is true, ask for the custom file name
-        if (saveWithCustomNames == true)
+        if (saveWithCustomNames)
         {
             Console.WriteLine("Enter the custom name for the JSON file (without extension): ");
             string customFileName = Console.ReadLine().Trim();
 
-            // Ensure the file name is not empty and doesn't contain invalid characters
-            if (string.IsNullOrEmpty(customFileName) || customFileName.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
+            if (!string.IsNullOrEmpty(customFileName) && customFileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0)
             {
-                Console.WriteLine("Invalid file name. Using default file name.");
+                fileName = customFileName + ".json"; // Valid custom name
             }
             else
             {
-                fileName = customFileName + ".json"; // Append .json extension
+                Console.WriteLine("Invalid file name. Using default file name.");
             }
         }
 
@@ -1582,6 +1688,7 @@ class Program
         JSON(); // After saving, return to the JSON menu
     }
 
+
     public static string MakeJSON(Dictionary<string, string> configValues)
     {
         // Read the "ColorfulText" option from configValues
@@ -1591,8 +1698,21 @@ class Program
         bool showDescriptions = bool.Parse(configValues.ContainsKey("ShowDescriptions") ? configValues["ShowDescriptions"] : "true");
         bool showSyntax = bool.Parse(configValues.ContainsKey("ShowSyntax") ? configValues["ShowSyntax"] : "true");
         bool showFieldType = bool.Parse(configValues.ContainsKey("ShowFieldType") ? configValues["ShowFieldType"] : "true");
+        List<string> files = new List<string> { };
 
-        string schemaPath = Path.Combine(Directory.GetCurrentDirectory(), "schemas", "default_schema.json");
+        List<string> SCHEMAS = new List<string>();
+        string SchemaDir = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "files/schemas"));
+
+        foreach (string file in Directory.GetFiles(SchemaDir))
+        {
+            string filename = new DirectoryInfo(file).Name;
+            SCHEMAS.Add(filename);
+            Console.WriteLine(filename);
+        }
+        Console.Write("From the above schemas choose the one you want to make the JSON with.");
+        string ReadFile = Console.ReadLine();
+
+        string schemaPath = Path.Combine(Directory.GetCurrentDirectory(), "files/schemas", ReadFile);
 
         // Ensure schema file exists
         if (!File.Exists(schemaPath))
@@ -1703,13 +1823,114 @@ class Program
                 break;
 
             case "string":
-                Console.Write($"{indent}Enter a string value for {fieldName}: ");
-                input = Console.ReadLine();
-                value = string.IsNullOrWhiteSpace(input) ? null : input;
+                while (true)
+                {
+                    string valueType = type.ToLower();
+                    Console.Write($"{indent}Enter a {valueType} value for {fieldName} (or press Enter to use the default): ");
+                    input = Console.ReadLine()?.Trim(); // Ensure input is trimmed and not null
+
+                    // Check for default value if input is empty
+                    if (string.IsNullOrWhiteSpace(input) && attributes.ContainsKey("default"))
+                    {
+                        value = attributes["default"];
+                        Console.WriteLine($"{indent}Using default value: {value}");
+                        break;
+                    }
+
+                    // Validate length constraints
+                    if (attributes.ContainsKey("maxLength") && input.Length > (int)attributes["maxLength"])
+                    {
+                        Console.WriteLine($"{indent}Value must be less than or equal to {(int)attributes["maxLength"]} characters. Try again.");
+                        continue;
+                    }
+
+                    if (attributes.ContainsKey("minLength") && input.Length < (int)attributes["minLength"])
+                    {
+                        Console.WriteLine($"{indent}Value must be greater than or equal to {(int)attributes["minLength"]} characters. Try again.");
+                        continue;
+                    }
+
+                    // If valid, assign the input to value and exit the loop
+                    value = input;
+                    break;
+                }
+                break;
+
+            case "boolean":
+                while (true)
+                {
+                    string valueType = type.ToLower();
+                    Console.Write($"{indent}Enter a {valueType} value for {fieldName} (true/false, or press Enter to use the default): ");
+                    input = Console.ReadLine(); // Ensure input is trimmed and not null
+
+                    // Check for default value if input is empty
+                    if (string.IsNullOrWhiteSpace(input) && attributes.ContainsKey("default"))
+                    {
+                        value = attributes["default"];
+                        Console.WriteLine($"{indent}Using default value: {value}");
+                        break;
+                    }
+
+                    // Validate the input as a boolean
+                    if (bool.TryParse(input, out bool boolResult))
+                    {
+                        value = boolResult; // Assign the parsed value
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{indent}Invalid input. Please enter 'true' or 'false'.");
+                    }
+                }
                 break;
 
             case "array":
-                value = ProcessArray(attributes, fieldName, level);
+                while (true)
+                {
+                    Console.Write($"{indent}Enter the array value for {fieldName} in JSON format (or press Enter to use the default): ");
+                    input = Console.ReadLine()?.Trim(); // Ensure input is trimmed and not null
+
+                    // Check for default value if input is empty
+                    if (string.IsNullOrWhiteSpace(input) && attributes.ContainsKey("default"))
+                    {
+                        value = attributes["default"];
+                        Console.WriteLine($"{indent}Using default value: {value}");
+                        break;
+                    }
+
+                    // Validate the array input
+                    try
+                    {
+                        // Parse input as JSON array
+                        var array = Newtonsoft.Json.JsonConvert.DeserializeObject<List<object>>(input);
+
+                        // Validate constraints if defined
+                        if (attributes.ContainsKey("minItems") && array.Count < (int)attributes["minItems"])
+                        {
+                            Console.WriteLine($"{indent}Array must contain at least {(int)attributes["minItems"]} items. Try again.");
+                            continue;
+                        }
+
+                        if (attributes.ContainsKey("maxItems") && array.Count > (int)attributes["maxItems"])
+                        {
+                            Console.WriteLine($"{indent}Array must contain no more than {(int)attributes["maxItems"]} items. Try again.");
+                            continue;
+                        }
+
+                        if (attributes.ContainsKey("uniqueItems") && (bool)attributes["uniqueItems"] && array.Count != array.Distinct().Count())
+                        {
+                            Console.WriteLine($"{indent}Array items must be unique. Try again.");
+                            continue;
+                        }
+
+                        value = array; // Assign validated array
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"{indent}Invalid array input. Ensure it's in correct JSON format. Error: {ex.Message}");
+                    }
+                }
                 break;
 
             case "enum":
@@ -1792,24 +2013,6 @@ class Program
         }
     }
 
-    private static List<object> ProcessArray(Newtonsoft.Json.Linq.JObject attributes, string fieldName, int level)
-    {
-        var items = new List<object>();
-        string indent = new string(' ', level * 2);
-        Console.WriteLine($"{indent}Enter values for array '{fieldName}'. Type 'done' to finish.");
-
-        while (true)
-        {
-            Console.Write($"{indent}Item {items.Count + 1}: ");
-            string input = Console.ReadLine();
-            if (input?.ToLower() == "done") break;
-
-            items.Add(input); // Add as string for simplicity; can add further processing based on type
-        }
-
-        return items;
-    }
-
     private static object ProcessEnum(Newtonsoft.Json.Linq.JObject attributes, string fieldName, int level)
     {
         var enumValues = attributes.GetValue("enum") as Newtonsoft.Json.Linq.JArray;
@@ -1880,11 +2083,9 @@ class Program
         return correctedJson; // This should be the JSON with corrected key casing (e.g., camelCase)
     }
 
-
-
 public static void ConfigureApplication()
     {
-        string configPath = Path.Combine(Directory.GetCurrentDirectory(), $"config.txt");
+        string configPath = Path.Combine(Directory.GetCurrentDirectory() + "/files", $"config.txt");
         // Dictionary to store config key-value pairs
         Dictionary<string, string> configValues = new Dictionary<string, string>();
         // Read config file
@@ -1912,11 +2113,10 @@ public static void ConfigureApplication()
         bool showFieldTypeAsName = bool.Parse(GetConfigValue("ShowFieldTypeAsName", "true"));
         string jsonExtensionType = GetConfigValue("JsonExtentsionType", ".json");
         bool colorfulText = bool.Parse(GetConfigValue("ColorfulText", "true"));
-        string saveFilePathJson = GetConfigValue("SaveFilePath[JSON]", "jsons");
-        string saveFilePathSchema = GetConfigValue("SaveFilePath[Schema]", "schemas");
+        string saveFilePathJson = GetConfigValue("SaveFilePath[JSON]", "files/jsons");
+        string saveFilePathSchema = GetConfigValue("SaveFilePath[Schema]", "files/schemas");
         bool saveSchemaWithCustomNames = bool.Parse(GetConfigValue("SaveSchemaWithCustomNames", "false"));
         bool defaultCaseCorrection = bool.Parse(GetConfigValue("DefaultCaseCorrection", "true"));
-        bool descriptionsForSchemaProperties = bool.Parse(GetConfigValue("DescriptionsForSchemaProperties", "false"));
         bool saveJSONSWithCustomNames = bool.Parse(GetConfigValue("SaveJSONSWithCustomNames", "false"));
         // Prompt user for input and update the config values
         configValues["PropertyDescriptions"] = PromptUser("Should Property Descriptions be shown?", propertyDescriptions);
@@ -1928,7 +2128,6 @@ public static void ConfigureApplication()
         configValues["SaveFilePath[Schema]"] = PromptUser("What is the save file path for Schema?", saveFilePathSchema);
         configValues["SaveSchemaWithCustomNames"] = PromptUser("Should schemas be saved with custom names?", saveSchemaWithCustomNames);
         configValues["DefaultCaseCorrection"] = PromptUser("Should default case correction be applied?", defaultCaseCorrection);
-        configValues["DescriptionsForSchemaProperties"] = PromptUser("Should Schema Properties have descriptions?", descriptionsForSchemaProperties);
         configValues["SaveJSONSWithCustomNames"] = PromptUser("Should JSONS be saved with custom names?", saveJSONSWithCustomNames);
         // Save the updated config values back to the config file
         using (StreamWriter sw = new StreamWriter(configPath))

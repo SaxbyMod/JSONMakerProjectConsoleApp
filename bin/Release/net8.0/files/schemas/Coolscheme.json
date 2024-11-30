@@ -1,0 +1,71 @@
+{
+"$schema": "https://json-schema.org/draft-04/schema#",
+"title": "MyCoolSchemaDawg",
+"description": "A schema that defines your Coolness Dudes",
+"type": "object",
+"properties": {
+"Name": {
+"type": "string",
+"description": "What is your name?",
+"minLength": 0,
+"maxLength": 999,
+"default": "Enter Here!"
+},
+"CoolMeter": {
+"type": "number",
+"description": "Define how Cool you are as a percentage",
+"minimum": 0,
+"maximum": 100,
+"exclusiveMinimum": false,
+"exclusiveMaximum": false,
+"multipleOf": 1,
+"default": "50"
+},
+"Describe": {
+"type": "object",
+"description": "Describe your coolness to me!",
+"properties": {
+"Coolness": {
+"type": "boolean",
+"description": "Would you say that you are a Coool dude?",
+"const": "true",
+"enum": [true, false]
+},
+"Coolint": {
+"type": "integer",
+"description": "What is your favorite Number?",
+"minimum": 0,
+"maximum": 99999999999999999999999,
+"exclusiveMinimum": false,
+"exclusiveMaximum": false,
+"multipleOf": 1
+},
+"Coolstr": {
+"type": "string",
+"description": "Describe me, what is your coolness like?",
+"minLength": 5,
+"maxLength": 99
+},
+"Coolray": {
+"type": "array",
+"description": "AN Array of all the Coool dudes you know",
+"items": { "type": "string" },
+"minItems": 0,
+"maxItems": 10,
+"uniqueItems": true
+},
+"Coolnum": {
+"type": "number",
+"description": "On a scale of 1-10 how cool am I?",
+"minimum": 0,
+"maximum": 10,
+"exclusiveMinimum": true,
+"exclusiveMaximum": false,
+"multipleOf": 1,
+"default": "10"
+}
+}
+}
+},
+"required": ["Name", "CoolMeter", "Describe"]
+}
