@@ -28,8 +28,8 @@
 "type": "array",
 "description": "Give me a description each string is a new line!",
 "items": { "type": "String" },
-"minItems": 50,
-"maxItems": 200,
+"minItems": 5,
+"maxItems": 20,
 "uniqueItems": true
 } ,
 "Image Index": {

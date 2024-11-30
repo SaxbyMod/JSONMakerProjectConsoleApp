@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JSONMakerProjectConsoleApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3bffe2f0492d42bdc7cf87c06715992313fad329")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e9f27bad747cb4252266b6c8a9c90ce6f25e3cd4")]
 [assembly: System.Reflection.AssemblyProductAttribute("JSONMakerProjectConsoleApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JSONMakerProjectConsoleApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

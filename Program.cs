@@ -1476,7 +1476,9 @@ class Program
 
         // Read necessary config values
         bool colorfulText = bool.Parse(configValues.ContainsKey("ColorfulText") ? configValues["ColorfulText"] : "true");
-        string saveFilePath = configValues.ContainsKey("SaveFilePath") ? configValues["SaveFilePath"] : "default_path.json";
+        string saveFilePath = configValues.ContainsKey("SaveFilePath") ? configValues["SaveFilePath"] : "jsons";
+        bool saveWithCustomNames = bool.Parse(configValues.ContainsKey("SaveSchemaWithCustomNames") ? configValues["SaveSchemaWithCustomNames"] : "true");
+        bool defaultCaseCorrection = bool.Parse(configValues.ContainsKey("DefaultCaseCorrection") ? configValues["DefaultCaseCorrection"] : "true");
 
         // Show the menu
         Console.Clear();
@@ -1500,6 +1502,7 @@ class Program
             if (!string.IsNullOrEmpty(generatedJson))
             {
                 jsonGenerated = true; // Set flag to true
+                JSON();
             }
         }
         else if (choice2 == "Save JSON")
@@ -1510,7 +1513,8 @@ class Program
             }
             else
             {
-                SaveJSON(generatedJson, saveFilePath, false, true); // Save the JSON
+                SaveJSON(generatedJson, saveFilePath, saveWithCustomNames, defaultCaseCorrection); // Save the JSON
+                JSON();
             }
         }
         else if (choice2 == "Back")
@@ -1538,7 +1542,7 @@ class Program
         string fileName = "output.json"; // Default file name
 
         // If saveWithCustomNames is true, ask for the custom file name
-        if (saveWithCustomNames)
+        if (saveWithCustomNames == true)
         {
             Console.WriteLine("Enter the custom name for the JSON file (without extension): ");
             string customFileName = Console.ReadLine().Trim();
@@ -1555,7 +1559,7 @@ class Program
         }
 
         // Apply case correction if enabled
-        if (defaultCaseCorrection)
+        if (defaultCaseCorrection == true)
         {
             jsonContent = ApplyCaseCorrection(jsonContent);
         }
@@ -1571,9 +1575,12 @@ class Program
         {
             Console.WriteLine($"Error saving the JSON file: {ex.Message}");
         }
+
+        int milliseconds = 2000;
+        Thread.Sleep(milliseconds);
+
         JSON(); // After saving, return to the JSON menu
     }
-
 
     public static string MakeJSON(Dictionary<string, string> configValues)
     {
@@ -1619,6 +1626,9 @@ class Program
 
             // Serialize to JSON (formatting with indents)
             string jsonOutput = JsonConvert.SerializeObject(jsonData, Formatting.Indented);
+
+            int milliseconds = 2000;
+            Thread.Sleep(milliseconds);
 
             // Return the generated JSON as a string instead of printing it
             return jsonOutput;
@@ -1760,8 +1770,6 @@ class Program
 
         return true; // Value is valid
     }
-
-
 
     private static void AddValidationSyntax(Newtonsoft.Json.Linq.JObject attributes, int level)
     {
