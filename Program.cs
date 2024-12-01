@@ -1357,6 +1357,8 @@ class Program
             Console.WriteLine("Warning, selecting Make Schema will Overwrite your current Schema.");
 
         }
+        int milliseconds = 2000;
+        Thread.Sleep(milliseconds);
         ReturningSchema(Schema);
     }
 
@@ -1366,26 +1368,18 @@ class Program
         string configPath = Path.Combine(Directory.GetCurrentDirectory(), "files", "config.txt");
         Dictionary<string, string> configValues = new Dictionary<string, string>();
 
-        try
+        foreach (var line in File.ReadLines(configPath))
         {
-            foreach (var line in File.ReadLines(configPath))
+            if (line.Contains(" = "))
             {
-                if (line.Contains(" = "))
+                string[] parts = line.Split(new string[] { " = " }, StringSplitOptions.None);
+                if (parts.Length == 2)
                 {
-                    string[] parts = line.Split(new string[] { " = " }, StringSplitOptions.None);
-                    if (parts.Length == 2)
-                    {
-                        string key = parts[0].Trim();
-                        string value = parts[1].Trim().Trim(';');
-                        configValues[key] = value;
-                    }
+                    string key = parts[0].Trim();
+                    string value = parts[1].Trim().Trim(';');
+                    configValues[key] = value;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error reading the config file: {ex.Message}");
-            return;
         }
 
         // Get the schema path and custom name setting from config
@@ -1445,8 +1439,11 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving schema to file: {ex.Message}");
+            Console.WriteLine("Error saving schema to file: " + ex.Message);
         }
+
+        int milliseconds = 2000;
+        Thread.Sleep(milliseconds);
 
         Schema();
     }

@@ -7,5 +7,4 @@ SaveFilePath[JSON] = files/jsons;
 SaveFilePath[Schema] = files/schemas;
 SaveSchemaWithCustomNames = true;
 DefaultCaseCorrection = true;
-DescriptionsForSchemaProperties = true;
 SaveJSONSWithCustomNames = true;
