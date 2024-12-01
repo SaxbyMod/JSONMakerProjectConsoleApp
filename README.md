@@ -24,10 +24,11 @@ You may be wondering what this does and thats pretty complex to answer. But I wi
 
 ### How to setup by default:
 
-1. Install the latest release.
-2. Unzip the zip to a folder of your liking.
-3. Run the application and configure it.
-4. Select JSON or Schema and select `make` after select `save`.
+1. Install Net 8.0 https://dotnet.microsoft.com/en-us/download
+2. Install the latest release.
+3. Unzip the zip to a folder of your liking.
+4. Run the application and configure it.
+5. Select JSON or Schema and select `make` after select `save`.
 
 ### How to add Schemas to your application
 
