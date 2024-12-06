@@ -1,3 +1,4 @@
+# **CASE SENSITIVE BEWARE**
 ## Json Maker Console App
 
 You may be wondering what this does and thats pretty complex to answer. But I will start off by providing some background. This project was made for a science fair, and the inspiration was from JSON Loader from the Inscryption Modding scene and the Json Editor site.
