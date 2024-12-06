@@ -1,7 +1,7 @@
 # **CASE SENSITIVE BEWARE**
 ## Json Maker Console App
 
-You may be wondering what this does and thats pretty complex to answer. But I will start off by providing some background. This project was made for a science fair, and the inspiration was from JSON Loader from the Inscryption Modding scene and the Json Editor site.
+You may be wondering what this does and that's pretty complex to answer. But I will start off by providing some background. This project was made for a science fair, and the inspiration was from JSON Loader from the Inscryption Modding scene and the Json Editor site.
 
 ### What this App can do
 
@@ -35,7 +35,7 @@ You may be wondering what this does and thats pretty complex to answer. But I wi
 
 1. Navigate to `files/schemas`
 2. Get all your schemas
-3. Make sure they end with the `JSON Extenstion Type`'s value
+3. Make sure they end with the `JSON Extension Type's value
 4. Run The Application
 5. Test it by making a JSON
 
