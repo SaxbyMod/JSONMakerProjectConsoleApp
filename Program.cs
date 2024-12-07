@@ -1355,7 +1355,6 @@ class Program
             Console.WriteLine(string.Join("\n", Schema));
             Console.Clear();
             Console.WriteLine("Warning, selecting Make Schema will Overwrite your current Schema.");
-
         }
         int milliseconds = 2000;
         Thread.Sleep(milliseconds);
@@ -1764,6 +1763,12 @@ class Program
 
         // Create indentation based on the nesting level
         string indent = new string(' ', level * 2);
+
+        // Check if the field is required and not provided
+        if (attributes.ContainsKey("required") && attributes["required"].ToObject<List<string>>().Contains(fieldName))
+        {
+            Console.WriteLine($"{indent}The field '{fieldName}' is required.");
+        }
 
         // Display the main field information with indentation
         Console.WriteLine($"{indent}{fieldName} ({type})");
