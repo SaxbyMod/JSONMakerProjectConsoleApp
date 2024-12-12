@@ -41,8 +41,8 @@ class Program
                 sw.WriteLine("ShowFieldTypeAsName = true");
                 sw.WriteLine("JsonExtentsionType = .json");
                 sw.WriteLine("ColorfulText = false");
-                sw.WriteLine("SaveFilePath[JSON] = default");
-                sw.WriteLine("SaveFilePath[Schema] = default");
+                sw.WriteLine("SaveFilePath[JSON] = files/jsons");
+                sw.WriteLine("SaveFilePath[Schema] = files/schemas");
                 sw.WriteLine("SaveSchemaWithCustomNames = false");
                 sw.WriteLine("DefaultCaseCorrection = true");
             }
